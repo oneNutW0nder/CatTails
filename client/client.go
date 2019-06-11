@@ -13,25 +13,13 @@ import (
 	"github.com/mdlayher/raw"
 )
 
-func newEthernetFrame() *ethernet.Frame {
-	// The frame to be sent over the network.
-	f := &ethernet.Frame{
-		// Broadcast frame to all machines on same network segment.
-		Destination: ethernet.Broadcast,
-		// Identify our machine as the sender.
-		Source: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
-		// Identify frame with an unused EtherType.
-		EtherType: 0xcccc,
-		// Data is going to be layers 3-4
-		Payload: []byte(createPacket()),
-	}
-
-	return f
-}
-
 func createPacket() []byte {
+	// Create a new seriablized buffer
 	buf := gopacket.NewSerializeBuffer()
+	// Generate options
 	opts := gopacket.SerializeOptions{}
+	// Serialize layers
+	// This builds/encapsulates the layers of a packet properly
 	gopacket.SerializeLayers(buf, opts,
 		// Ethernet layer
 		&layers.Ethernet{
@@ -48,7 +36,7 @@ func createPacket() []byte {
 		&layers.IPv4{
 			Version:    0x4,
 			IHL:        5,
-			Length:     28,
+			Length:     46,
 			TTL:        255,
 			Flags:      0x40,
 			FragOffset: 0,
@@ -61,22 +49,26 @@ func createPacket() []byte {
 		&layers.UDP{
 			SrcPort:  6969,
 			DstPort:  9696,
-			Length:   8,
-			Checksum: 0,
+			Length:   26,
+			Checksum: 0, // TODO
 		},
-		gopacket.Payload("Encapsulation work"))
+		// Set the payload
+		gopacket.Payload("Encapsulation work"),
+	)
+	// Save the newly formed packet and return it
 	packetData := buf.Bytes()
 
 	return packetData
 }
 
 func main() {
-	// Select the eth0 interface to use for Ethernet traffic.
+	// Select the interface from your device (loopback for testing)
 	ifi, err := net.InterfaceByName("lo")
-	fmt.Println(net.Interfaces())
 	if err != nil {
 		log.Fatalf("failed to open interface: %v", err)
 	}
+	// Prints out info about all interfaces on device
+	fmt.Println(net.Interfaces())
 
 	// Open a raw socket using same EtherType as our frame.
 	c, err := raw.ListenPacket(ifi, 0xcccc, nil)
@@ -84,13 +76,6 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	defer c.Close()
-
-	// Marshal a frame to its binary format.
-	//f := newEthernetFrame()
-	//b, err := f.MarshalBinary()
-	if err != nil {
-		log.Fatalf("failed to marshal frame: %v", err)
-	}
 
 	// Broadcast the frame to all devices on our network segment.
 	addr := &raw.Addr{HardwareAddr: ethernet.Broadcast}
