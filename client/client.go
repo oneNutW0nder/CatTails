@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"syscall"
+
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 
 	"github.com/mdlayher/ethernet"
 	"github.com/mdlayher/raw"
 )
 
-func newEthernetFrame(payload string) *ethernet.Frame {
+func newEthernetFrame() *ethernet.Frame {
 	// The frame to be sent over the network.
 	f := &ethernet.Frame{
 		// Broadcast frame to all machines on same network segment.
@@ -18,11 +22,52 @@ func newEthernetFrame(payload string) *ethernet.Frame {
 		Source: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
 		// Identify frame with an unused EtherType.
 		EtherType: 0xcccc,
-		// Send a simple message.
-		Payload: []byte(payload),
+		// Data is going to be layers 3-4
+		Payload: []byte(createPacket()),
 	}
 
 	return f
+}
+
+func createPacket() []byte {
+	buf := gopacket.NewSerializeBuffer()
+	opts := gopacket.SerializeOptions{}
+	gopacket.SerializeLayers(buf, opts,
+		// Ethernet layer
+		&layers.Ethernet{
+			EthernetType: layers.EthernetTypeIPv4,
+			SrcMAC: net.HardwareAddr{
+				0xde, 0xad, 0xbe, 0xef, 0xde, 0xad,
+			},
+			DstMAC: net.HardwareAddr{
+				0xde, 0xad, 0xbe, 0xef, 0xde, 0xad,
+			},
+			Length: 0,
+		},
+		// IPv4 layer
+		&layers.IPv4{
+			Version:    0x4,
+			IHL:        5,
+			Length:     28,
+			TTL:        255,
+			Flags:      0x40,
+			FragOffset: 0,
+			Checksum:   0,
+			Protocol:   syscall.IPPROTO_UDP,
+			DstIP:      net.IPv4(127, 0, 0, 1),
+			SrcIP:      net.IPv4(127, 0, 0, 1),
+		},
+		// UDP layer
+		&layers.UDP{
+			SrcPort:  6969,
+			DstPort:  9696,
+			Length:   8,
+			Checksum: 0,
+		},
+		gopacket.Payload("Encapsulation work"))
+	packetData := buf.Bytes()
+
+	return packetData
 }
 
 func main() {
@@ -41,15 +86,15 @@ func main() {
 	defer c.Close()
 
 	// Marshal a frame to its binary format.
-	f := newEthernetFrame("hello world")
-	b, err := f.MarshalBinary()
+	//f := newEthernetFrame()
+	//b, err := f.MarshalBinary()
 	if err != nil {
 		log.Fatalf("failed to marshal frame: %v", err)
 	}
 
 	// Broadcast the frame to all devices on our network segment.
 	addr := &raw.Addr{HardwareAddr: ethernet.Broadcast}
-	if _, err := c.WriteTo(b, addr); err != nil {
+	if _, err := c.WriteTo(createPacket(), addr); err != nil {
 		log.Fatalf("failed to write frame: %v", err)
 	}
 }
