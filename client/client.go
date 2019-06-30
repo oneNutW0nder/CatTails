@@ -8,29 +8,36 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-
-	"github.com/mdlayher/ethernet"
-	"github.com/mdlayher/raw"
 )
 
-func createPacket() []byte {
+func checkEr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// htons converts a short (uint16) from host-to-network byte order.
+func htons(i uint16) uint16 {
+	return (i<<8)&0xff00 | i>>8
+}
+
+func createPacket(ifaceInfo *net.Interface) []byte {
 	// Create a new seriablized buffer
 	buf := gopacket.NewSerializeBuffer()
+
 	// Generate options
 	opts := gopacket.SerializeOptions{}
+
 	// Serialize layers
 	// This builds/encapsulates the layers of a packet properly
 	gopacket.SerializeLayers(buf, opts,
 		// Ethernet layer
 		&layers.Ethernet{
 			EthernetType: layers.EthernetTypeIPv4,
-			SrcMAC: net.HardwareAddr{
-				0xde, 0xad, 0xbe, 0xef, 0xde, 0xad,
-			},
+			SrcMAC:       ifaceInfo.HardwareAddr,
 			DstMAC: net.HardwareAddr{
-				0xde, 0xad, 0xbe, 0xef, 0xde, 0xad,
+				0x88, 0xb1, 0x11, 0x58, 0xf7, 0x3c,
 			},
-			Length: 0,
 		},
 		// IPv4 layer
 		&layers.IPv4{
@@ -42,13 +49,13 @@ func createPacket() []byte {
 			FragOffset: 0,
 			Checksum:   0,
 			Protocol:   syscall.IPPROTO_UDP,
-			DstIP:      net.IPv4(127, 0, 0, 1),
-			SrcIP:      net.IPv4(127, 0, 0, 1),
+			DstIP:      net.IPv4(192, 168, 1, 57),
+			SrcIP:      net.IPv4(192, 168, 1, 57),
 		},
 		// UDP layer
 		&layers.UDP{
 			SrcPort:  6969,
-			DstPort:  9696,
+			DstPort:  layers.UDPPort(1337),
 			Length:   26,
 			Checksum: 0, // TODO
 		},
@@ -61,25 +68,35 @@ func createPacket() []byte {
 	return packetData
 }
 
+func sendPacket(fd int) {
+	// Get *Interface struct for the interface that we are using
+	info, _ := net.InterfaceByName("wlp4s0")
+
+	var haddr [8]byte
+	copy(haddr[0:7], info.HardwareAddr[0:7])
+	addr := syscall.SockaddrLinklayer{
+		Protocol: syscall.ETH_P_IP,
+		Ifindex:  info.Index,
+		Halen:    uint8(len(info.HardwareAddr)),
+		Addr:     haddr,
+	}
+
+	checkEr(syscall.Bind(fd, &addr))
+	checkEr(syscall.SetLsfPromisc("wlp4s0", true))
+	n, err := syscall.Write(fd, createPacket(info))
+	checkEr(err)
+
+	fmt.Printf("Number of bytes written: %d", n)
+
+	//fmt.Println(info)
+	//fmt.Println(info.HardwareAddr)
+}
+
 func main() {
-	// Select the interface from your device (loopback for testing)
-	ifi, err := net.InterfaceByName("lo")
-	if err != nil {
-		log.Fatalf("failed to open interface: %v", err)
-	}
-	// Prints out info about all interfaces on device
-	fmt.Println(net.Interfaces())
 
-	// Open a raw socket using same EtherType as our frame.
-	c, err := raw.ListenPacket(ifi, 0xcccc, nil)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	defer c.Close()
-
-	// Broadcast the frame to all devices on our network segment.
-	addr := &raw.Addr{HardwareAddr: ethernet.Broadcast}
-	if _, err := c.WriteTo(createPacket(), addr); err != nil {
-		log.Fatalf("failed to write frame: %v", err)
+	fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
+	checkEr(err)
+	for {
+		sendPacket(fd)
 	}
 }
