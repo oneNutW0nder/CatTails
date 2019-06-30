@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"syscall"
+
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 )
 
 // Function to do this err checking repeatedly
@@ -29,16 +32,24 @@ func readPacket(fd int) {
 	// Buffer for packet data that is read in
 	buf := make([]byte, 1500)
 
-	// Read in the packets
-	// num 		--> number of bytes
-	// sockaddr --> the sockaddr struct that the packet was read from
-	// err 		--> was there an error?
-	num, sockaddr, err := syscall.Recvfrom(fd, buf, 0)
-	checkEr(err)
+	for {
+		// Read in the packets
+		// num 		--> number of bytes
+		// sockaddr --> the sockaddr struct that the packet was read from
+		// err 		--> was there an error?
+		_, _, err := syscall.Recvfrom(fd, buf, 0)
+		checkEr(err)
 
+		// Parse packet... hopefully
+		packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
+		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+			udp, _ := udpLayer.(*layers.UDP)
+			fmt.Printf("Data in UDP packet is: %d", udp.Payload)
+		}
+	}
 	// Debug shenanigans
-	fmt.Println(num, "bytes from", sockaddr)
-	fmt.Println(buf)
+	// fmt.Println(num, "bytes from", sockaddr)
+	// fmt.Println(buf)
 }
 
 func main() {
@@ -50,9 +61,7 @@ func main() {
 	fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
 	checkEr(err)
 
-	for {
-		// REEEEEEEEEEEEEEEEEEEEEEEEEE
-		readPacket(fd)
-	}
+	// REEEEEEEEEEEEEEEEEEEEEEEEEE
+	readPacket(fd)
 
 }
