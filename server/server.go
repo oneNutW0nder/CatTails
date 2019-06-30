@@ -20,7 +20,10 @@ func htons(i uint16) uint16 {
 }
 
 // Reads the packet in from a socket file descriptor (fd)
-// fd int --> file descriptor that relates to the socket created in main
+//
+// fd int 	--> file descriptor that relates to the socket created in main
+//
+// Returns 	--> None
 func readPacket(fd int) {
 
 	// Buffer for packet data that is read in
@@ -42,8 +45,8 @@ func main() {
 
 	// Create the socket
 	// AF_PACKET 	--> Low level packet interface access
-	// SOCK_RAW		--> Socket type is RAW
-	// ETH_P_ALL	--> Handle all Ethernet frames that come
+	// SOCK_RAW		--> Socket type is RAWe
+	// ETH_P_ALL	--> Handle all Ethernet frames that com
 	fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
 	checkEr(err)
 
