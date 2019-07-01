@@ -1,4 +1,4 @@
-package cattails
+package CatTails
 
 import (
 	"fmt"
@@ -126,11 +126,11 @@ func CreatePacket(ifaceInfo *net.Interface, payload string) (packetData []byte) 
 		&layers.IPv4{
 			Version:    0x4,
 			IHL:        5,
-			Length:     46,
+			Length:     uint16(20 + 8 + len(payload)), // 20 = IP header; 8 = UDP header; payload = ?
 			TTL:        255,
 			Flags:      0x40,
 			FragOffset: 0,
-			Checksum:   0,
+			Checksum:   0,                   // Wireshark does not blatantly complain about this so it is on the backlog...
 			Protocol:   syscall.IPPROTO_UDP, // Sending a UDP Packet
 			DstIP:      net.IPv4(192, 168, 1, 57),
 			SrcIP:      net.IPv4(192, 168, 1, 57),
@@ -139,7 +139,7 @@ func CreatePacket(ifaceInfo *net.Interface, payload string) (packetData []byte) 
 		&layers.UDP{
 			SrcPort:  6969,
 			DstPort:  layers.UDPPort(1337), // Saw this used in some code @github... seems legit
-			Length:   26,
+			Length:   uint16(8 + len(payload)),
 			Checksum: 0, // TODO
 		},
 		// Set the payload
@@ -181,4 +181,17 @@ func NewSocket() (fd int) {
 	checkEr(err)
 
 	return fd
+}
+
+// Get preferred outbound ip of this machine
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
 }
