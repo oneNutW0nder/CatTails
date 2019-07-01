@@ -183,12 +183,13 @@ func NewSocket() (fd int) {
 	return fd
 }
 
-// Get preferred outbound ip of this machine
+// GetOutboundIP finds the outbound IP addr for the machine
+//
+// Returns	--> IP address in form "XXX.XXX.XXX.XXX"
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkEr(err)
+
 	defer conn.Close()
 
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
