@@ -111,13 +111,13 @@ func sendPacket(fd int) {
 
 	// Send a packet using our socket
 	// n --> number of bytes sent
-	for {
-		n, err := syscall.Write(fd, createPacket(ifaceInfo))
-		checkEr(err)
+	//for {
+	n, err := syscall.Write(fd, createPacket(ifaceInfo))
+	checkEr(err)
 
-		// Debug shenanigans
-		fmt.Printf("Number of bytes written: %d", n)
-	}
+	// Debug shenanigans
+	fmt.Printf("Number of bytes written: %d", n)
+	//}
 }
 
 func main() {
