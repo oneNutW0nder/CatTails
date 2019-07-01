@@ -26,7 +26,8 @@ func htons(i uint16) uint16 {
 
 // Reads the packet in from a socket file descriptor (fd)
 //
-// fd int 	--> file descriptor that relates to the socket created in main
+// fd  	--> file descriptor that relates to the socket created in main
+// vm 	--> BPF VM that contains the BPF Program
 //
 // Returns 	--> None
 func readPacket(fd int, vm *bpf.VM) {
