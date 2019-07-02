@@ -104,7 +104,8 @@ func SendPacket(fd int, ifaceInfo *net.Interface, packetData []byte) {
 // ifaceInfo	--> pointer to a net.Interface
 //
 // Returns		--> Byte array that is a properly formed/serialized packet
-func CreatePacket(ifaceInfo *net.Interface, payload string) (packetData []byte) {
+func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
+	dstIP net.IP, dstMAC net.HardwareAddr, payload string) (packetData []byte) {
 
 	// Create a new seriablized buffer
 	buf := gopacket.NewSerializeBuffer()
@@ -119,9 +120,7 @@ func CreatePacket(ifaceInfo *net.Interface, payload string) (packetData []byte) 
 		&layers.Ethernet{
 			EthernetType: layers.EthernetTypeIPv4,
 			SrcMAC:       ifaceInfo.HardwareAddr,
-			DstMAC: net.HardwareAddr{
-				0x88, 0xb1, 0x11, 0x58, 0xf7, 0x3c,
-			},
+			DstMAC:       dstMAC,
 		},
 		// IPv4 layer
 		&layers.IPv4{
@@ -133,8 +132,8 @@ func CreatePacket(ifaceInfo *net.Interface, payload string) (packetData []byte) 
 			FragOffset: 0,
 			Checksum:   0,                   // Wireshark does not blatantly complain about this so it is on the backlog...
 			Protocol:   syscall.IPPROTO_UDP, // Sending a UDP Packet
-			DstIP:      net.IPv4(192, 168, 1, 57),
-			SrcIP:      net.IPv4(192, 168, 1, 57),
+			DstIP:      dstIP,               //net.IPv4(192, 168, 1, 57),
+			SrcIP:      srcIp,               //net.IPv4(192, 168, 1, 57),
 		},
 		// UDP layer
 		&layers.UDP{
