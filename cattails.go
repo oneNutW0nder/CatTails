@@ -1,6 +1,7 @@
 package CatTails
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net"
@@ -186,7 +187,7 @@ func NewSocket() (fd int) {
 // GetOutboundIP finds the outbound IP addr for the machine
 //
 // Returns	--> IP address in form "XXX.XXX.XXX.XXX"
-func GetOutboundIP() net.IP {
+func getOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	checkEr(err)
 
@@ -195,4 +196,29 @@ func GetOutboundIP() net.IP {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	return localAddr.IP
+}
+
+// GetOutwardIface determines the interface associated with
+// sending traffic out on the wire and returns a *net.Interface struct
+//
+// Returns	--> *net.Interface struct of outward interface
+func GetOutwardIface() (byNameiface *net.Interface) {
+	outboundIP := getOutboundIP()
+
+	ifaces, _ := net.Interfaces()
+
+	for _, i := range ifaces {
+
+		byNameiface, _ := net.InterfaceByName(i.Name)
+
+		addrs, _ := byNameiface.Addrs()
+
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if bytes.Compare(outboundIP, ipnet.IP.To4()) == 0 {
+					return byNameiface
+				}
+			}
+		}
+	}
 }
