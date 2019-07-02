@@ -202,23 +202,29 @@ func getOutboundIP() net.IP {
 // sending traffic out on the wire and returns a *net.Interface struct
 //
 // Returns	--> *net.Interface struct of outward interface
-func GetOutwardIface() (byNameiface *net.Interface) {
+//			--> net.IP used for creating a packet
+func GetOutwardIface() (byNameiface *net.Interface, ip net.IP) {
 	outboundIP := getOutboundIP()
 
-	ifaces, _ := net.Interfaces()
+	ifaces, err := net.Interfaces()
+	checkEr(err)
 
 	for _, i := range ifaces {
 
-		byNameiface, _ := net.InterfaceByName(i.Name)
+		byNameiface, err := net.InterfaceByName(i.Name)
+		checkEr(err)
 
 		addrs, _ := byNameiface.Addrs()
 
 		for _, addr := range addrs {
 			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 				if bytes.Compare(outboundIP, ipnet.IP.To4()) == 0 {
-					return byNameiface
+					ip := ipnet.IP.To4()
+					return byNameiface, ip
 				}
 			}
 		}
 	}
+
+	return
 }
