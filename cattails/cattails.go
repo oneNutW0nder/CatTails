@@ -59,9 +59,34 @@ func ReadPacket(fd int, vm *bpf.VM) {
 		packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 			udp, _ := udpLayer.(*layers.UDP)
+			// Will call function to parse/carry out payload received after testing
 			fmt.Printf("Data in UDP packet is: %d", udp.Payload)
 		}
 	}
+}
+
+// CreateAddrStruct creates a "syscall.ScokaddrLinklayer" struct used
+//	for binding the socket to an interface
+//
+// ifaceInfo	--> net.Interface pointer
+//
+// Returns		--> syscall.SockaddrLinklayer struct
+func CreateAddrStruct(ifaceInfo *net.Interface) (addr syscall.SockaddrLinklayer) {
+	// Create a byte array for the MAC Addr
+	var haddr [8]byte
+
+	// Copy the MAC from the interface struct in the new array
+	copy(haddr[0:7], ifaceInfo.HardwareAddr[0:7])
+
+	// Initialize the Sockaddr struct
+	addr = syscall.SockaddrLinklayer{
+		Protocol: syscall.ETH_P_IP,
+		Ifindex:  ifaceInfo.Index,
+		Halen:    uint8(len(ifaceInfo.HardwareAddr)),
+		Addr:     haddr,
+	}
+
+	return addr
 }
 
 // SendPacket sends a packet using a provided
@@ -70,21 +95,7 @@ func ReadPacket(fd int, vm *bpf.VM) {
 // fd 		--> The file descriptor for the socket to use
 //
 // Returns 	--> None
-func SendPacket(fd int, ifaceInfo *net.Interface, packetData []byte) {
-
-	// Create a byte array for the MAC Addr
-	var haddr [8]byte
-
-	// Copy the MAC from the interface struct in the new array
-	copy(haddr[0:7], ifaceInfo.HardwareAddr[0:7])
-
-	// Initialize the Sockaddr struct
-	addr := syscall.SockaddrLinklayer{
-		Protocol: syscall.ETH_P_IP,
-		Ifindex:  ifaceInfo.Index,
-		Halen:    uint8(len(ifaceInfo.HardwareAddr)),
-		Addr:     haddr,
-	}
+func SendPacket(fd int, ifaceInfo *net.Interface, addr syscall.SockaddrLinklayer, packetData []byte) {
 
 	// Bind the socket
 	checkEr(syscall.Bind(fd, &addr))
@@ -96,6 +107,8 @@ func SendPacket(fd int, ifaceInfo *net.Interface, packetData []byte) {
 	// n --> number of bytes sent
 	_, err := syscall.Write(fd, packetData)
 	checkEr(err)
+	checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, false))
+
 }
 
 // CreatePacket takes a net.Interface pointer to access
