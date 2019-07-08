@@ -124,40 +124,42 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 	buf := gopacket.NewSerializeBuffer()
 
 	// Generate options
-	opts := gopacket.SerializeOptions{}
+	opts := gopacket.SerializeOptions{
+		ComputeChecksums: true,
+		FixLengths:       true,
+	}
 
-	// Serialize layers
-	// This builds/encapsulates the layers of a packet properly
-	gopacket.SerializeLayers(buf, opts,
-		// Ethernet layer
-		&layers.Ethernet{
-			EthernetType: layers.EthernetTypeIPv4,
-			SrcMAC:       ifaceInfo.HardwareAddr,
-			DstMAC:       dstMAC,
-		},
-		// IPv4 layer
-		&layers.IPv4{
-			Version:    0x4,
-			IHL:        5,
-			Length:     uint16(20 + 8 + len(payload)), // 20 = IP header; 8 = UDP header; payload = ?
-			TTL:        255,
-			Flags:      0x40,
-			FragOffset: 0,
-			Checksum:   0,                   // Wireshark does not blatantly complain about this so it is on the backlog...
-			Protocol:   syscall.IPPROTO_UDP, // Sending a UDP Packet
-			DstIP:      dstIP,               //net.IPv4(192, 168, 1, 57),
-			SrcIP:      srcIp,               //net.IPv4(192, 168, 1, 57),
-		},
-		// UDP layer
-		&layers.UDP{
-			SrcPort:  6969,
-			DstPort:  layers.UDPPort(1337), // Saw this used in some code @github... seems legit
-			Length:   uint16(8 + len(payload)),
-			Checksum: 0, // TODO
-		},
-		// Set the payload
-		gopacket.Payload(payload),
-	)
+	// Ethernet layer
+	ethernet := &layers.Ethernet{
+		EthernetType: layers.EthernetTypeIPv4,
+		SrcMAC:       ifaceInfo.HardwareAddr,
+		DstMAC:       dstMAC,
+	}
+	// IPv4 layer
+	ip := &layers.IPv4{
+		Version: 0x4,
+		IHL:     5,
+		//Length:     uint16(20 + 8 + len(payload)), // 20 = IP header; 8 = UDP header; payload = ?
+		TTL:        255,
+		Flags:      0x40,
+		FragOffset: 0,
+		//Checksum:   0,                   // Wireshark does not blatantly complain about this so it is on the backlog...
+		Protocol: syscall.IPPROTO_UDP, // Sending a UDP Packet
+		DstIP:    dstIP,               //net.IPv4(192, 168, 1, 57),
+		SrcIP:    srcIp,               //net.IPv4(192, 168, 1, 57),
+	}
+	// UDP layer
+	udp := &layers.UDP{
+		SrcPort: 6969,
+		DstPort: layers.UDPPort(1337), // Saw this used in some code @github... seems legit
+		//Length:  uint16(8 + len(payload)),
+		//Checksum: 0, // TODO
+	}
+
+	// Checksum calculations?
+	udp.SetNetworkLayerForChecksum(ip)
+
+	checkEr(gopacket.SerializeLayers(buf, opts, ethernet, ip, udp, gopacket.Payload(payload)))
 
 	// Save the newly formed packet and return it
 	packetData = buf.Bytes()
@@ -198,9 +200,11 @@ func NewSocket() (fd int) {
 
 // GetOutboundIP finds the outbound IP addr for the machine
 //
+// addr		--> The IP you want to be able to reach from an interface
+//
 // Returns	--> IP address in form "XXX.XXX.XXX.XXX"
-func getOutboundIP() net.IP {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
+func getOutboundIP(addr string) net.IP {
+	conn, err := net.Dial("udp", addr)
 	checkEr(err)
 
 	defer conn.Close()
@@ -213,10 +217,12 @@ func getOutboundIP() net.IP {
 // GetOutwardIface determines the interface associated with
 // sending traffic out on the wire and returns a *net.Interface struct
 //
+// addr		--> The IP you want to be able to reach from an interface
+//
 // Returns	--> *net.Interface struct of outward interface
 //			--> net.IP used for creating a packet
-func GetOutwardIface() (byNameiface *net.Interface, ip net.IP) {
-	outboundIP := getOutboundIP()
+func GetOutwardIface(addr string) (byNameiface *net.Interface, ip net.IP) {
+	outboundIP := getOutboundIP(addr)
 
 	ifaces, err := net.Interfaces()
 	checkEr(err)
