@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"syscall"
+	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -120,6 +122,10 @@ func SendPacket(fd int, ifaceInfo *net.Interface, addr syscall.SockaddrLinklayer
 func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 	dstIP net.IP, dstMAC net.HardwareAddr, payload string) (packetData []byte) {
 
+	// Used for generating random source port
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+
 	// Create a new seriablized buffer
 	buf := gopacket.NewSerializeBuffer()
 
@@ -137,23 +143,19 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 	}
 	// IPv4 layer
 	ip := &layers.IPv4{
-		Version: 0x4,
-		IHL:     5,
-		//Length:     uint16(20 + 8 + len(payload)), // 20 = IP header; 8 = UDP header; payload = ?
+		Version:    0x4,
+		IHL:        5,
 		TTL:        255,
 		Flags:      0x40,
 		FragOffset: 0,
-		//Checksum:   0,                   // Wireshark does not blatantly complain about this so it is on the backlog...
-		Protocol: syscall.IPPROTO_UDP, // Sending a UDP Packet
-		DstIP:    dstIP,               //net.IPv4(192, 168, 1, 57),
-		SrcIP:    srcIp,               //net.IPv4(192, 168, 1, 57),
+		Protocol:   syscall.IPPROTO_UDP, // Sending a UDP Packet
+		DstIP:      dstIP,               //net.IPv4(192, 168, 1, 57),
+		SrcIP:      srcIp,               //net.IPv4(192, 168, 1, 57),
 	}
 	// UDP layer
 	udp := &layers.UDP{
-		SrcPort: 6969,
-		DstPort: layers.UDPPort(1337), // Saw this used in some code @github... seems legit
-		//Length:  uint16(8 + len(payload)),
-		//Checksum: 0, // TODO
+		SrcPort: layers.UDPPort(r1.Intn(65535)), // Random ports baby
+		DstPort: layers.UDPPort(1337),           // Saw this used in some code @github... seems legit
 	}
 
 	// Checksum calculations?
