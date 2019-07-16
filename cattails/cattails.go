@@ -110,11 +110,8 @@ func SendPacket(fd int, ifaceInfo *net.Interface, addr syscall.SockaddrLinklayer
 	// Bind the socket
 	checkEr(syscall.Bind(fd, &addr))
 
-	// Set promiscuous mode = true
 	checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, true))
 
-	// Send a packet using our socket
-	// n --> number of bytes sent
 	_, err := syscall.Write(fd, packetData)
 	checkEr(err)
 	checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, false))
@@ -134,7 +131,7 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 
-	// Create a new seriablized buffer
+	// Buffer to building our packet
 	buf := gopacket.NewSerializeBuffer()
 
 	// Generate options
@@ -166,7 +163,7 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 		DstPort: layers.UDPPort(1337),           // Saw this used in some code @github... seems legit
 	}
 
-	// Checksum calculations?
+	// Checksum calculations
 	udp.SetNetworkLayerForChecksum(ip)
 
 	checkEr(gopacket.SerializeLayers(buf, opts, ethernet, ip, udp, gopacket.Payload(payload)))
@@ -186,6 +183,7 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 // Returns	--> Pointer to a BPF VM containing the filter/program
 func CreateBPFVM(filter []bpf.RawInstruction) (vm *bpf.VM) {
 
+	// Disassemble the raw instructions so we can pass them to a VM
 	insts, allDecoded := bpf.Disassemble(filter)
 	if allDecoded != true {
 		log.Fatal("Error decoding BPF instructions...")
