@@ -27,7 +27,6 @@ The callbacks and communication happen over UDP port 53. You will be able to sen
 - [x] IP/UDP Header lengths and checksums are properly computed
 - [x] Packets are properly filtered 
 - [ ] Payloads are parsed and handled based on C2 or bot needs
-- [ ] Payloads will use FlatBuffer for speed
 - [ ] Bots will send HELLO messages on a time interval, providing the C2 with client info
 - [ ] C2 stores/tracks client information from bot HELLOs
 - [ ] C2 simple CLI to interface with bots (show info, # of hosts, send commands, etc)
