@@ -38,7 +38,7 @@ func htons(i uint16) uint16 {
 // vm 	--> BPF VM that contains the BPF Program
 //
 // Returns 	--> None
-func ReadPacket(fd int, vm *bpf.VM) []byte {
+func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 
 	// Buffer for packet data that is read in
 	buf := make([]byte, 1500)
@@ -65,9 +65,9 @@ func ReadPacket(fd int, vm *bpf.VM) []byte {
 		// Parse packet... hopefully
 		packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-			udp, _ := udpLayer.(*layers.UDP)
+			//udp, _ := udpLayer.(*layers.UDP)
 			// Will call function to parse/carry out payload received after testing
-			return udp.Payload
+			return packet
 		}
 	}
 }
