@@ -34,17 +34,19 @@ func main() {
 
 	fd := cattails.NewSocket()
 	iface, srcIp := cattails.GetOutwardIface("8.8.8.8:80")
-	fmt.Println("Src IP:", srcIp)
-	fmt.Println("Interface used:", iface)
+	//fmt.Println("Src IP:", srcIp)
+	//fmt.Println("Interface used:", iface)
 
 	//vm := cattails.CreateBPFVM(filterRaw)
 
 	dstMAC, _ := cattails.GetRouterMAC()
-	fmt.Println("Gateway MAC used:", dstMAC)
+	//fmt.Println("Gateway MAC used:", dstMAC)
+
+	fmt.Print(cattails.CreateHello(iface.HardwareAddr, srcIp))
 
 	packet := cattails.CreatePacket(iface, srcIp, net.IPv4(192, 168, 68, 129), dstMAC, "REEEEEEEEEEEEEEEEEEE")
 	addr := cattails.CreateAddrStruct(iface)
 
 	cattails.SendPacket(fd, iface, addr, packet)
-	//cattails.ReadPacket(fd, vm)
+	//packet := cattails.ReadPacket(fd, vm)
 }
