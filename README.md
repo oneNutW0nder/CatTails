@@ -15,6 +15,8 @@ The callbacks and communication happen over UDP port 53. You will be able to sen
 - **Command feedback/output***
     - CatTails will send you the output of a command (if there is any)  
       and let you know if your command completed successfully.  
+- **Customized HELLO***
+    - I am leaving the implementation of the HELLO messages up the person       writing the bot/c2 to allow flexibility
 
 (*) Work in progress  
 (x) Completed
