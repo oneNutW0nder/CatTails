@@ -99,7 +99,10 @@ func CreateAddrStruct(ifaceInfo *net.Interface) (addr syscall.SockaddrLinklayer)
 // SendPacket sends a packet using a provided
 //	socket file descriptor (fd)
 //
-// fd 		--> The file descriptor for the socket to use
+// fd 			--> The file descriptor for the socket to use
+// ifaceInfo	--> pointer to net.Interface struct
+// addr			--> struct from CreateAddrStruct()
+// packetdata	--> The packet to send
 //
 // Returns 	--> None
 func SendPacket(fd int, ifaceInfo *net.Interface, addr syscall.SockaddrLinklayer, packetData []byte) {
@@ -154,8 +157,8 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 		Flags:      0x40,
 		FragOffset: 0,
 		Protocol:   syscall.IPPROTO_UDP, // Sending a UDP Packet
-		DstIP:      dstIP,               //net.IPv4(192, 168, 1, 57),
-		SrcIP:      srcIp,               //net.IPv4(192, 168, 1, 57),
+		DstIP:      dstIP,               //net.IPv4(),
+		SrcIP:      srcIp,               //net.IPv4(),
 	}
 	// UDP layer
 	udp := &layers.UDP{
