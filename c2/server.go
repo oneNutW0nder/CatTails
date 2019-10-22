@@ -1,6 +1,8 @@
 package main
 
 import (
+	"syscall"
+
 	"github.com/oneNutW0nder/CatTails/cattails"
 	"golang.org/x/net/bpf"
 )
@@ -30,18 +32,17 @@ func main() {
 		{0x6, 0, 0, 0x00000000},
 	}
 
-	fd := cattails.NewSocket()
-
 	vm := cattails.CreateBPFVM(filterRaw)
 
 	//received := cattails.ReadPacket(fd, vm)
 	for {
+		fd := cattails.NewSocket()
 		packet := cattails.ReadPacket(fd, vm)
 		// Yeet over to processing function
 		if packet != nil {
 			// Spawn routine and send the packet data
 			go cattails.ProcessPacket(packet)
 		}
+		syscall.Close(fd)
 	}
-	//fmt.Print(received)
 }
