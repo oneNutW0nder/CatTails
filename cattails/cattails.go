@@ -12,8 +12,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
+
+	"golang.org/x/sys/unix"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -48,7 +49,8 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	// num 		--> number of bytes
 	// sockaddr --> the sockaddr struct that the packet was read from
 	// err 		--> was there an error?
-	_, _, err := syscall.Recvfrom(fd, buf, 0)
+	// _, _, err := syscall.Recvfrom(fd, buf, 0)
+	_, _, err := unix.Recvfrom(fd, buf, 0)
 
 	checkEr(err)
 
@@ -105,7 +107,7 @@ func ProcessPacket(packet gopacket.Packet) {
 // ifaceInfo	--> net.Interface pointer
 //
 // Returns		--> syscall.SockaddrLinklayer struct
-func CreateAddrStruct(ifaceInfo *net.Interface) (addr syscall.SockaddrLinklayer) {
+func CreateAddrStruct(ifaceInfo *net.Interface) (addr unix.SockaddrLinklayer) {
 	// Create a byte array for the MAC Addr
 	var haddr [8]byte
 
@@ -113,8 +115,8 @@ func CreateAddrStruct(ifaceInfo *net.Interface) (addr syscall.SockaddrLinklayer)
 	copy(haddr[0:7], ifaceInfo.HardwareAddr[0:7])
 
 	// Initialize the Sockaddr struct
-	addr = syscall.SockaddrLinklayer{
-		Protocol: syscall.ETH_P_IP,
+	addr = unix.SockaddrLinklayer{
+		Protocol: unix.ETH_P_IP,
 		Ifindex:  ifaceInfo.Index,
 		Halen:    uint8(len(ifaceInfo.HardwareAddr)),
 		Addr:     haddr,
@@ -132,16 +134,16 @@ func CreateAddrStruct(ifaceInfo *net.Interface) (addr syscall.SockaddrLinklayer)
 // packetdata	--> The packet to send
 //
 // Returns 	--> None
-func SendPacket(fd int, ifaceInfo *net.Interface, addr syscall.SockaddrLinklayer, packetData []byte) {
+func SendPacket(fd int, ifaceInfo *net.Interface, addr unix.SockaddrLinklayer, packetData []byte) {
 
 	// Bind the socket
-	checkEr(syscall.Bind(fd, &addr))
+	checkEr(unix.Bind(fd, &addr))
 
-	checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, true))
+	// checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, true))
 
-	_, err := syscall.Write(fd, packetData)
+	_, err := unix.Write(fd, packetData)
 	checkEr(err)
-	checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, false))
+	// checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, false))
 
 }
 
@@ -180,9 +182,9 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 		TTL:        255,
 		Flags:      0x40,
 		FragOffset: 0,
-		Protocol:   syscall.IPPROTO_UDP, // Sending a UDP Packet
-		DstIP:      dstIP,               //net.IPv4(),
-		SrcIP:      srcIp,               //net.IPv4(),
+		Protocol:   unix.IPPROTO_UDP, // Sending a UDP Packet
+		DstIP:      dstIP,            //net.IPv4(),
+		SrcIP:      srcIp,            //net.IPv4(),
 	}
 	// UDP layer
 	udp := &layers.UDP{
@@ -227,7 +229,8 @@ func CreateBPFVM(filter []bpf.RawInstruction) (vm *bpf.VM) {
 // Returns --> File descriptor for the raw socket
 func NewSocket() (fd int) {
 
-	fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
+	// fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
+	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_RAW, int(htons(unix.ETH_P_ALL)))
 	checkEr(err)
 
 	return fd
