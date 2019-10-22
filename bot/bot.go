@@ -31,7 +31,8 @@ func main() {
 	count := 0
 	for {
 		time.Sleep(2 * time.Second)
-		sendHello(fd, count, iface, src, net.IPv4(18, 222, 200, 69), dstMAC)
+		// 18.191.209.30
+		sendHello(fd, count, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 		count++
 		fmt.Println(count)
 	}
