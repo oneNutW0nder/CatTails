@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"net"
-	"syscall"
 	"time"
 
 	"github.com/oneNutW0nder/CatTails/cattails"
+	"golang.org/x/sys/unix"
 )
 
 func sendHello(fd int, count int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
@@ -20,7 +20,7 @@ func sendHello(fd int, count int, iface *net.Interface, src net.IP, dst net.IP, 
 func main() {
 
 	fd := cattails.NewSocket()
-	defer syscall.Close(fd)
+	defer unix.Close(fd)
 
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
