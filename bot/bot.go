@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"syscall"
-	"time"
 
 	"github.com/oneNutW0nder/CatTails/cattails"
 )
@@ -26,14 +24,10 @@ func main() {
 	//vm := cattails.CreateBPFVM(filterRaw)
 
 	dstMAC, _ := cattails.GetRouterMAC()
-	for x := 1; x < 5; x++ {
-		fmt.Println("Sending number:", x)
-		time.Sleep(time.Second * 5)
-		sendHello(fd, iface, src, net.IPv4(192, 168, 68, 129), dstMAC)
-	}
-	//fmt.Println("Gateway MAC used:", dstMAC)
+	// for x := 1; x < 2; x++ {
+	// 	fmt.Println("Sending number:", x)
+	sendHello(fd, iface, src, net.IPv4(129, 21, 117, 56), dstMAC)
+	// 	time.Sleep(time.Second * 5)
+	// }
 
-	//fmt.Print(cattails.CreateHello(iface.HardwareAddr, srcIp))
-
-	//packet := cattails.ReadPacket(fd, vm)
 }

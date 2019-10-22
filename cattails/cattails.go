@@ -43,33 +43,54 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	// Buffer for packet data that is read in
 	buf := make([]byte, 1500)
 
-	for {
-		// Read in the packets
-		// num 		--> number of bytes
-		// sockaddr --> the sockaddr struct that the packet was read from
-		// err 		--> was there an error?
-		_, _, err := syscall.Recvfrom(fd, buf, 0)
-		checkEr(err)
+	// Read in the packets
+	// num 		--> number of bytes
+	// sockaddr --> the sockaddr struct that the packet was read from
+	// err 		--> was there an error?
+	_, _, err := syscall.Recvfrom(fd, buf, 0)
+	checkEr(err)
 
-		// Filter packet?
-		// numBytes	--> Number of bytes
-		// err	--> Error you say?
-		numBytes, err := vm.Run(buf)
-		checkEr(err)
-		if numBytes == 0 {
-			continue // 0 means that the packet should be dropped
-			// Here we are just "ignoring" the packet and moving on to the next one
-		}
-		fmt.Println(numBytes)
+	// Filter packet?
+	// numBytes	--> Number of bytes
+	// err	--> Error you say?
+	numBytes, err := vm.Run(buf)
+	checkEr(err)
+	if numBytes == 0 {
+		// Change "continue" to return for routine logic
+		return nil // 0 means that the packet should be dropped
+		// Here we are just "ignoring" the packet and moving on to the next one
+	}
+	fmt.Println(numBytes)
 
-		// Parse packet... hopefully
-		packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
-		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-			//udp, _ := udpLayer.(*layers.UDP)
-			// Will call function to parse/carry out payload received after testing
+	// Parse packet... hopefully
+	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
+	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+		// Add logic to make sure this is my own shit
+		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
 			return packet
 		}
+		return nil
 	}
+
+	return nil
+}
+
+// ProcessPacket TODO:
+func ProcessPacket(packet gopacket.Packet) {
+
+	fmt.Println("Received packet! -->", string(packet.ApplicationLayer().Payload()))
+
+	payload := string(packet.ApplicationLayer().Payload())
+
+	strings.Split(payload, " ")
+	/*
+		typeOfMessage := payload[0]
+		hostname := payload[1]
+		mac := payload[2]
+		ip := payload[3]
+
+		fmt.Println()
+	*/
 }
 
 // CreateAddrStruct creates a "syscall.ScokaddrLinklayer" struct used
