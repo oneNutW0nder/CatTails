@@ -19,15 +19,13 @@ func main() {
 
 	fd := cattails.NewSocket()
 	defer syscall.Close(fd)
+
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
 	//vm := cattails.CreateBPFVM(filterRaw)
 
 	dstMAC, _ := cattails.GetRouterMAC()
-	// for x := 1; x < 2; x++ {
-	// 	fmt.Println("Sending number:", x)
+
 	sendHello(fd, iface, src, net.IPv4(129, 21, 117, 56), dstMAC)
-	// 	time.Sleep(time.Second * 5)
-	// }
 
 }
