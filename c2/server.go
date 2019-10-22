@@ -33,7 +33,6 @@ func main() {
 	vm := cattails.CreateBPFVM(filterRaw)
 	fd := cattails.NewSocket()
 
-	count := 0
 	//received := cattails.ReadPacket(fd, vm)
 	for {
 		packet := cattails.ReadPacket(fd, vm)
