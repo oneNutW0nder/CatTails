@@ -11,6 +11,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+var stagedCmd = "echo 'hello from cattails' > /tmp/cattails"
+
 // Host defines values for a callback from a bot
 type Host struct {
 	Hostname string
@@ -44,6 +46,7 @@ func processPacket(packet gopacket.Packet, listen chan Host) {
 	}
 
 	fmt.Println("My host:", newHost)
+	listen <- newHost
 }
 
 func main() {
