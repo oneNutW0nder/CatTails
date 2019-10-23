@@ -52,7 +52,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("DST MAC:", dstMAC.String())
+	fmt.Println("[+] DST MAC:", dstMAC.String())
 
 	// 18.191.209.30
 	fmt.Println("[+] Starting HELLO timer")
