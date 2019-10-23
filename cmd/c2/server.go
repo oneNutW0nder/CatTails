@@ -28,8 +28,8 @@ type Host struct {
 
 // PwnBoard is used for updating pwnboard
 type PwnBoard struct {
-	IPs  string
-	Type string
+	IPs  string `json:"ips"`
+	Type string `json:"type"`
 }
 
 // sendCommand takes
