@@ -82,7 +82,7 @@ func main() {
 	fmt.Println("Entering recieve loop")
 
 	for {
-		packet := cattails.ReadPacket(readfd, vm)
+		packet := cattails.ServerReadPacket(readfd, vm)
 		// Yeet over to processing function
 		if packet != nil {
 			go serverProcessPacket(packet, listen)

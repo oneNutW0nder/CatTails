@@ -55,7 +55,7 @@ func main() {
 
 	// Listen for responses
 	for {
-		packet := cattails.ReadPacket(readfd, vm)
+		packet := cattails.BotReadPacket(readfd, vm)
 
 		if packet != nil {
 			go botProcessPacket(packet)
