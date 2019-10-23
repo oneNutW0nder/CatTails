@@ -113,7 +113,12 @@ func updatepwnBoard(bot Host) {
 	}
 
 	// Send the post to pwnboard
-	http.Post(url, "application/json", bytes.NewBuffer(sendit))
+	_, err = http.Post(url, "application/json", bytes.NewBuffer(sendit))
+	if err != nil {
+		fmt.Println("[-] ERROR SENDING POST:", err)
+	}
+
+	fmt.Println("[+] Updating pwnboard", bot.IP)
 }
 
 func main() {
