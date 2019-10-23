@@ -80,7 +80,7 @@ func main() {
 	listen := make(chan string)
 
 	// Iface and src ip for the sendcommand func to use
-	iface, src := cattails.GetOutwardIface("8.8.8.8")
+	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
 	// Spawn routine to listen for responses
 	go sendCommand(sendfd, iface, src, listen)
