@@ -24,8 +24,6 @@ func main() {
 
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
-	//vm := cattails.CreateBPFVM(filterRaw)
-
 	dstMAC, _ := cattails.GetRouterMAC()
 
 	count := 0
