@@ -20,8 +20,6 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-var stagedCmd = "echo 'gotem' > /tmp/cattails"
-
 // Function to do this err checking repeatedly
 func checkEr(err error) {
 	if err != nil {
