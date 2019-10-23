@@ -33,14 +33,10 @@ func main() {
 	vm := cattails.CreateBPFVM(filterRaw)
 	fd := cattails.NewSocket()
 
-	//received := cattails.ReadPacket(fd, vm)
 	for {
 		packet := cattails.ReadPacket(fd, vm)
 		// Yeet over to processing function
 		if packet != nil {
-			// count++
-			// fmt.Println(count)
-			// Spawn routine and send the packet data
 			go cattails.ProcessPacket(packet)
 		}
 		// syscall.Close(fd)
