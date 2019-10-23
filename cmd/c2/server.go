@@ -84,7 +84,7 @@ func main() {
 
 	for {
 		// packet := cattails.ServerReadPacket(readfd, vm)
-		packet := cattails.BotReadPacket(readfd, vm)
+		packet := cattails.ServerReadPacket(readfd, vm)
 		// Yeet over to processing function
 		if packet != nil {
 			go serverProcessPacket(packet, listen)
