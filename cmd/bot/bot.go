@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net"
 	"time"
 
@@ -23,10 +25,14 @@ func main() {
 
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
-	dstMAC, _ := cattails.GetRouterMAC()
+	dstMAC, err := cattails.GetRouterMAC()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for {
 		time.Sleep(2 * time.Second)
+		fmt.Println("Sending")
 		// 18.191.209.30
 		sendHello(fd, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 	}
