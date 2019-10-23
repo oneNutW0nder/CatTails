@@ -73,6 +73,7 @@ func main() {
 
 	readfd := cattails.NewSocket()
 	sendfd := cattails.NewSocket()
+	fmt.Println("Created sockets")
 	defer unix.Close(readfd)
 	defer unix.Close(sendfd)
 
@@ -83,7 +84,10 @@ func main() {
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
 	// Spawn routine to listen for responses
+	fmt.Println("Starting go routine...")
 	go sendCommand(sendfd, iface, src, listen)
+	fmt.Println("SendCommand routine started")
+	fmt.Println("Entering recieve loop")
 
 	for {
 		packet := cattails.ReadPacket(readfd, vm)
