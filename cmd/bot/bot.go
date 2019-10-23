@@ -73,7 +73,7 @@ func main() {
 	// Listen for responses
 	fmt.Println("[+] Listening")
 	for {
-		packet := cattails.BotReadPacket(readfd, vm, src)
+		packet := cattails.BotReadPacket(readfd, vm)
 
 		if packet != nil {
 			go botProcessPacket(packet)
