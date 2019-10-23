@@ -325,7 +325,7 @@ func CreateHello(hostMAC net.HardwareAddr, srcIP net.IP) (hello string) {
 		log.Fatal("Hostname not found...")
 	}
 
-	hello = "HELLO: " + " " + hostname + " " + hostMAC.String() + " " + srcIP.String()
+	hello = "HELLO:" + " " + hostname + " " + hostMAC.String() + " " + srcIP.String()
 
 	return hello
 }
