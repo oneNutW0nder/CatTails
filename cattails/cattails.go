@@ -10,7 +10,6 @@ import (
 	"math/rand"
 	"net"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -77,27 +76,6 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 		return nil
 	}
 	return nil
-}
-
-// ProcessPacket TODO:
-func ProcessPacket(packet gopacket.Packet) {
-
-	data := string(packet.ApplicationLayer().Payload())
-
-	payload := strings.Split(data, " ")
-
-	// Get the type of message
-	typeOfMessage := payload[0]
-
-	if typeOfMessage == "HELLO:" {
-		id, err := strconv.Atoi(payload[1])
-		checkEr(err)
-		hostname := payload[2]
-		mac := payload[3]
-		ip := payload[4]
-	} else if typeOfMessage == "COMMAND:" {
-		cmdToExec := payload[1]
-	}
 }
 
 // CreateAddrStruct creates a "syscall.ScokaddrLinklayer" struct used
