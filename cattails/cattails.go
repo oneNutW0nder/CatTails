@@ -62,7 +62,6 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 		return nil // 0 means that the packet should be dropped
 		// Here we are just "ignoring" the packet and moving on to the next one
 	}
-	fmt.Println(numBytes)
 
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
