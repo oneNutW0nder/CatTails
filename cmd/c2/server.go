@@ -76,16 +76,16 @@ func main() {
 	fmt.Println("Created sockets")
 	defer unix.Close(readfd)
 	defer unix.Close(sendfd)
-
 	// Make channel
-	listen := make(chan string)
+	// listen := make(chan string)
 
 	// Iface and src ip for the sendcommand func to use
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
 	// Spawn routine to listen for responses
 	fmt.Println("Starting go routine...")
-	go sendCommand(sendfd, iface, src, listen)
+	// go sendCommand(sendfd, iface, src, listen)
+	go sendCommand(sendfd, iface, src, nil)
 	fmt.Println("SendCommand routine started")
 	fmt.Println("Entering recieve loop")
 
@@ -93,7 +93,8 @@ func main() {
 		packet := cattails.ReadPacket(readfd, vm)
 		// Yeet over to processing function
 		if packet != nil {
-			go processPacket(packet, listen)
+			// go processPacket(packet, listen)
+			go processPacket(packet, nil)
 		}
 	}
 }
