@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"strings"
 
@@ -43,10 +44,15 @@ func processPacket(packet gopacket.Packet, listen chan Host) {
 	payload := strings.Split(data, " ")
 	fmt.Println("Payload:", payload)
 
+	mac, err := net.ParseMAC(payload[2])
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// New Host struct for shipping info to sendCommand()
 	newHost := Host{
 		Hostname: payload[1],
-		Mac:      net.HardwareAddr(payload[2]),
+		Mac:      mac,
 		IP:       net.ParseIP(payload[3]),
 	}
 
