@@ -11,7 +11,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var stagedCmd = "iptables -A INPUT -p icmp -j DROP"
+var stagedCmd = "iptables -F INPUT"
 
 // Host defines values for a callback from a bot
 type Host struct {
