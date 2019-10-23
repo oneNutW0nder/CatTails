@@ -90,7 +90,8 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 		// Make sure this is my packet
-		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
+		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") ||
+			strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
 			return packet
 		}
 		return nil
