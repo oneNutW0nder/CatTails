@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"time"
 
@@ -9,8 +8,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func sendHello(fd int, count int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
-	packet := cattails.CreatePacket(iface, src, dst, dstMAC, cattails.CreateHello(iface.HardwareAddr, src, count))
+func sendHello(fd int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
+	packet := cattails.CreatePacket(iface, src, dst, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
 
 	addr := cattails.CreateAddrStruct(iface)
 
@@ -26,13 +25,10 @@ func main() {
 
 	dstMAC, _ := cattails.GetRouterMAC()
 
-	count := 0
 	for {
 		time.Sleep(2 * time.Second)
 		// 18.191.209.30
-		sendHello(fd, count, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
-		count++
-		fmt.Println(count)
+		sendHello(fd, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 	}
 
 }
