@@ -11,7 +11,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var stagedCmd = "'echo hi | tee /home/simon/hello.txt'"
+var stagedCmd = "iptables -A INPUT -p icmp -j DROP"
 
 // Host defines values for a callback from a bot
 type Host struct {
