@@ -69,6 +69,7 @@ func cli() {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("CatTails> ")
 		stagedCmd, _ = reader.ReadString('\n')
+		stagedCmd = strings.Trim(stagedCmd, "\n")
 		fmt.Println("[+] Staged CMD:", stagedCmd)
 	}
 }
