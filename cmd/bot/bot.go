@@ -12,9 +12,13 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func sendHello(fd int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
+func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
 	for {
+		fd := cattails.NewSocket()
+		defer unix.Close(fd)
+
 		fmt.Println("Sending")
+
 		packet := cattails.CreatePacket(iface, src, dst, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
 
 		addr := cattails.CreateAddrStruct(iface)
@@ -38,9 +42,7 @@ func main() {
 
 	vm := cattails.CreateBPFVM(cattails.FilterRaw)
 
-	sendfd := cattails.NewSocket()
 	readfd := cattails.NewSocket()
-	defer unix.Close(sendfd)
 	defer unix.Close(readfd)
 
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
@@ -51,7 +53,7 @@ func main() {
 	}
 
 	// 18.191.209.30
-	go sendHello(sendfd, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
+	go sendHello(iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 
 	// Listen for responses
 	for {
