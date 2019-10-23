@@ -4,7 +4,7 @@
 This project is a redteam implant that leverages raw sockets to 
 send/recieve callbacks from a C2 infrastructure.  
   
-The callbacks and communication happen over UDP port 53. You will be able to send/execute commands on the remote host via a C2 server.  
+The callbacks and communication happen over a UDP port. You will be able to send/execute commands on the remote host via a C2 server.  
 
 ### Features
 
