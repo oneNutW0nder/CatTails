@@ -20,6 +20,9 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
+// FilterRaw is a BPF struct containing raw instructions.
+// Generate with tcpdump udp and port 1337 -dd
+// or whatever filter you would like to generate
 var FilterRaw = []bpf.RawInstruction{
 	{0x28, 0, 0, 0x0000000c},
 	{0x15, 0, 6, 0x000086dd},
@@ -56,7 +59,7 @@ func htons(i uint16) uint16 {
 	return (i<<8)&0xff00 | i>>8
 }
 
-// ReadPacket reads packets from a socket file descriptor (fd)
+// ServerReadPacket reads packets from a socket file descriptor (fd)
 //
 // fd  	--> file descriptor that relates to the socket created in main
 // vm 	--> BPF VM that contains the BPF Program
