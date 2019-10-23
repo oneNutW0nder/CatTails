@@ -49,7 +49,6 @@ func ReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	// num 		--> number of bytes
 	// sockaddr --> the sockaddr struct that the packet was read from
 	// err 		--> was there an error?
-	// _, _, err := syscall.Recvfrom(fd, buf, 0)
 	_, _, err := unix.Recvfrom(fd, buf, 0)
 
 	checkEr(err)
@@ -139,12 +138,8 @@ func SendPacket(fd int, ifaceInfo *net.Interface, addr unix.SockaddrLinklayer, p
 	// Bind the socket
 	checkEr(unix.Bind(fd, &addr))
 
-	// checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, true))
-
 	_, err := unix.Write(fd, packetData)
 	checkEr(err)
-	// checkEr(syscall.SetLsfPromisc(ifaceInfo.Name, false))
-
 }
 
 // CreatePacket takes a net.Interface pointer to access
@@ -229,7 +224,6 @@ func CreateBPFVM(filter []bpf.RawInstruction) (vm *bpf.VM) {
 // Returns --> File descriptor for the raw socket
 func NewSocket() (fd int) {
 
-	// fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
 	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_RAW, int(htons(unix.ETH_P_ALL)))
 	checkEr(err)
 
