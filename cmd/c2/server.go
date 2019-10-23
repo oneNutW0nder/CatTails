@@ -13,7 +13,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var stagedCmd = ""
+var stagedCmd string
 
 // Host defines values for a callback from a bot
 type Host struct {
