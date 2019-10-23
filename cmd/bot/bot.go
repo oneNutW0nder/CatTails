@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"github.com/oneNutW0nder/CatTails/cattails"
 	"golang.org/x/sys/unix"
@@ -30,11 +29,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for {
-		time.Sleep(2 * time.Second)
-		fmt.Println("Sending")
-		// 18.191.209.30
-		sendHello(fd, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
-	}
+	fmt.Println("Sending")
+	// 18.191.209.30
+	sendHello(fd, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 
 }
