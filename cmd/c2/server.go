@@ -87,9 +87,12 @@ func main() {
 
 	vm := cattails.CreateBPFVM(filterRaw)
 
-	fd := cattails.NewSocket()
+	sendfd := cattails.NewSocket()
+	readfd := cattails.NewSocket()
 	fmt.Println("Created sockets")
-	defer unix.Close(fd)
+	defer unix.Close(sendfd)
+	defer unix.Close(readfd)
+
 	// Make channel
 	listen := make(chan Host)
 
@@ -98,12 +101,12 @@ func main() {
 
 	// Spawn routine to listen for responses
 	fmt.Println("Starting go routine...")
-	go sendCommand(fd, iface, src, listen)
+	go sendCommand(sendfd, iface, src, listen)
 	fmt.Println("SendCommand routine started")
 	fmt.Println("Entering recieve loop")
 
 	for {
-		packet := cattails.ReadPacket(fd, vm)
+		packet := cattails.ReadPacket(readfd, vm)
 		// Yeet over to processing function
 		if packet != nil {
 			go processPacket(packet, listen)
