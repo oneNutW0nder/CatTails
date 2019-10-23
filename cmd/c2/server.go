@@ -11,7 +11,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var stagedCmd = "echo 'hi' > /home/simon/hello.txt"
+var stagedCmd = "echo 'hi' | /home/simon/hello.txt"
 
 // Host defines values for a callback from a bot
 type Host struct {
