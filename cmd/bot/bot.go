@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 	"time"
 
+	"github.com/google/gopacket"
 	"github.com/oneNutW0nder/CatTails/cattails"
 	"golang.org/x/sys/unix"
 )
@@ -20,6 +22,15 @@ func sendHello(fd int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.
 		// Send hello every 5 seconds
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func botProcessPacket(packet gopacket.Packet) {
+
+	data := string(packet.ApplicationLayer().Payload())
+
+	payload := strings.Split(data, " ")
+	fmt.Println("Payload:", payload)
+
 }
 
 func main() {
