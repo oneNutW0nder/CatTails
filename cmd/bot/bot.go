@@ -34,7 +34,7 @@ func botProcessPacket(packet gopacket.Packet) {
 	data := string(packet.ApplicationLayer().Payload())
 
 	payload := strings.Split(data, " ")
-	fmt.Println("Payload:", payload)
+	fmt.Println("Payload:", payload[1:])
 }
 
 func main() {
