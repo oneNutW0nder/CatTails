@@ -14,6 +14,7 @@ import (
 
 func sendHello(fd int, iface *net.Interface, src net.IP, dst net.IP, dstMAC net.HardwareAddr) {
 	for {
+		fmt.Println("Sending")
 		packet := cattails.CreatePacket(iface, src, dst, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
 
 		addr := cattails.CreateAddrStruct(iface)
@@ -49,7 +50,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Sending")
 	// 18.191.209.30
 	go sendHello(sendfd, iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 
