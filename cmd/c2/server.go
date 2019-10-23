@@ -30,7 +30,9 @@ func sendCommand(iface *net.Interface, src net.IP, listen chan Host) {
 		// Create packet
 		packet := cattails.CreatePacket(iface, src, bot.IP, bot.Mac, cattails.CreateCommand(stagedCmd))
 		fmt.Println("Repsonding to:", bot)
+
 		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
+
 		fmt.Println("Sent reponse sent")
 		unix.Close(fd)
 	}
