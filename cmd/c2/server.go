@@ -68,7 +68,8 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 	// Parse the values from the data
 	mac, err := net.ParseMAC(payload[2])
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("[-] ERROR PARSING MAC:", err)
+		return
 	}
 
 	// New Host struct for shipping info to sendCommand()
@@ -78,6 +79,7 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 		IP:       net.ParseIP(payload[3]),
 	}
 
+	fmt.Println("[+] Recieved From:", newHost.Hostname, "(", newHost.IP, ")")
 	// Write host to channel
 	listen <- newHost
 }
