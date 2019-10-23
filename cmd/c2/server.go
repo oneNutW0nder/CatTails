@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/oneNutW0nder/CatTails/cattails"
 	"golang.org/x/net/bpf"
+	"golang.org/x/sys/unix"
 )
 
 func main() {
@@ -32,6 +33,7 @@ func main() {
 
 	vm := cattails.CreateBPFVM(filterRaw)
 	fd := cattails.NewSocket()
+	defer unix.Close(fd)
 
 	for {
 		packet := cattails.ReadPacket(fd, vm)
