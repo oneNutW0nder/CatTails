@@ -79,7 +79,7 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 		IP:       net.ParseIP(payload[3]),
 	}
 
-	fmt.Println("[+] Recieved From:", newHost.Hostname, "(", newHost.IP, ")")
+	// fmt.Println("[+] Recieved From:", newHost.Hostname, "(", newHost.IP, ")")
 	// Write host to channel
 	listen <- newHost
 }
@@ -117,8 +117,6 @@ func updatepwnBoard(bot Host) {
 	if err != nil {
 		fmt.Println("[-] ERROR SENDING POST:", err)
 	}
-
-	fmt.Println("[+] Updating pwnboard", bot.IP)
 }
 
 func main() {
