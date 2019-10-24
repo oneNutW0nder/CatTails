@@ -69,7 +69,7 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 	data := string(packet.ApplicationLayer().Payload())
 	payload := strings.Split(data, " ")
 
-	fmt.Println("PACKET SRC IP", packet.Layers())
+	fmt.Println("PACKET SRC IP", packet.NetworkLayer().NetworkFlow().Src().String)
 
 	// Parse the values from the data
 	mac, err := net.ParseMAC(payload[2])
