@@ -7,11 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
 	"os"
 	"strings"
-	"time"
 
 	"golang.org/x/net/bpf"
 	"golang.org/x/sys/unix"
@@ -192,11 +190,7 @@ func SendPacket(fd int, ifaceInfo *net.Interface, addr unix.SockaddrLinklayer, p
 //
 // Returns		--> Byte array that is a properly formed/serialized packet
 func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
-	dstIP net.IP, dstMAC net.HardwareAddr, payload string) (packetData []byte) {
-
-	// Used for generating random source port
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
+	dstIP net.IP, srcPort int, dstPort int, dstMAC net.HardwareAddr, payload string) (packetData []byte) {
 
 	// Buffer to building our packet
 	buf := gopacket.NewSerializeBuffer()
@@ -226,8 +220,8 @@ func CreatePacket(ifaceInfo *net.Interface, srcIp net.IP,
 	}
 	// UDP layer
 	udp := &layers.UDP{
-		SrcPort: layers.UDPPort(r1.Intn(65535)), // Random ports baby
-		DstPort: layers.UDPPort(1337),           // Saw this used in some code @github... seems legit
+		SrcPort: layers.UDPPort(srcPort), // No Random Port
+		DstPort: layers.UDPPort(dstPort), // Saw this used in some code @github... seems legit
 	}
 
 	// Checksum calculations
