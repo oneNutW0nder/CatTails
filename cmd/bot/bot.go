@@ -21,7 +21,7 @@ func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.Hardware
 		fd := cattails.NewSocket()
 		defer unix.Close(fd)
 
-		packet := cattails.CreatePacket(iface, src, dst, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
+		packet := cattails.CreatePacket(iface, src, dst, 18000, 1337, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
 
 		addr := cattails.CreateAddrStruct(iface)
 
