@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/google/gopacket"
@@ -25,6 +26,8 @@ type Host struct {
 	Mac      net.HardwareAddr
 	IP       net.IP
 	RespIP   net.IP
+	SrcPort  int
+	DstPort  int
 }
 
 // PwnBoard is used for updating pwnboard
@@ -79,12 +82,17 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 		return
 	}
 
+	srcport, _ := strconv.Atoi(packet.TransportLayer().TransportFlow().Src().String())
+	dstport, _ := strconv.Atoi(packet.TransportLayer().TransportFlow().Dst().String())
+
 	// New Host struct for shipping info to sendCommand()
 	newHost := Host{
 		Hostname: payload[1],
 		Mac:      mac,
 		IP:       net.ParseIP(payload[3]),
 		RespIP:   net.ParseIP(packet.NetworkLayer().NetworkFlow().Src().String()),
+		SrcPort:  srcport,
+		DstPort:  dstport,
 	}
 
 	// fmt.Println("[+] Recieved From:", newHost.Hostname, "(", newHost.IP, ")")
