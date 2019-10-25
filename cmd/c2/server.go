@@ -128,7 +128,10 @@ func cli() {
 
 			// Get TARGET command
 			fmt.Print("TARGET COMMAND> ")
-			targetcommand, _ := reader.ReadString('\n')
+			targetcommand, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Println("[-] ERROR GETTING TARGET CMD:", err)
+			}
 			targetcommand = strings.Trim(targetcommand, "\n")
 		}
 		fmt.Println("[+] Staged CMD:", stagedCmd)
