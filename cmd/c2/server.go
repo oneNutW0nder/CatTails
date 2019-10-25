@@ -132,7 +132,9 @@ func cli() {
 			targetcommand = strings.Trim(targetcommand, "\n")
 		}
 		fmt.Println("[+] Staged CMD:", stagedCmd)
-		fmt.Println("[+] Target CMD:", targetcommand, "on box", targetIP)
+		if targetcommand != "" {
+			fmt.Println("[+] Target CMD:", targetcommand, "on box", targetIP)
+		}
 	}
 }
 
