@@ -129,7 +129,7 @@ func cli() {
 			// Get TARGET command
 			fmt.Print("TARGET COMMAND> ")
 			targetcommand, _ = reader.ReadString('\n')
-			fmt.Println("TARGET CMD BEFORE STRIP:", targetcommand)
+			// fmt.Println("TARGET CMD BEFORE STRIP:", targetcommand)
 			targetcommand = strings.Trim(targetcommand, "\n")
 		}
 		fmt.Println("[+] Staged CMD:", stagedCmd)
