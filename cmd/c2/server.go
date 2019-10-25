@@ -132,6 +132,7 @@ func cli() {
 			targetcommand = strings.Trim(targetcommand, "\n")
 		}
 		fmt.Println("[+] Staged CMD:", stagedCmd)
+		fmt.Println("[+] Target CMD:", targetcommand)
 	}
 }
 
