@@ -396,3 +396,9 @@ func CreateCommand(cmd string) (command string) {
 	command = "COMMAND: " + cmd
 	return command
 }
+
+// CreateTargetCommand creates a target command string
+func CreateTargetCommand(cmd string, ip string) (command string) {
+	command = "TARGET: " + ip + " " + cmd
+	return command
+}
