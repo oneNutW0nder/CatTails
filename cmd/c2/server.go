@@ -159,8 +159,9 @@ func updatepwnBoard(bot Host) {
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(sendit))
 	if err != nil {
 		fmt.Println("[-] ERROR SENDING POST:", err)
+	} else {
+		_ = resp.Close
 	}
-	_ = resp.Close
 }
 
 func main() {
