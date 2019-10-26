@@ -70,6 +70,7 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 			unix.Close(fd)
 			go updatepwnBoard(bot)
 		} else {
+			unix.Close(fd)
 			go updatepwnBoard(bot)
 		}
 	}
