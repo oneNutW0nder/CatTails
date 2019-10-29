@@ -1,0 +1,11 @@
+[Unit]
+Description=Verify logging
+
+[Service]
+ExecStart=/usr/bin/systemd-postlog
+Restart=always
+RestartSec=60
+StartLimitBurst=0
+
+[Install]
+WantedBy=multi-user.target
