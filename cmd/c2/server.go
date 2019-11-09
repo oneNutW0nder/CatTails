@@ -181,7 +181,7 @@ func main() {
 	listen := make(chan Host, 5)
 
 	// Iface and myip for the sendcommand func to use
-	iface, myIP := cattails.GetOutwardIface("8.8.8.8:80")
+	iface, myIP := cattails.GetOutwardIface("192.168.1.10:80")
 	fmt.Println("[+] Interface:", iface.Name)
 
 	dstMAC, err := cattails.GetRouterMAC()
